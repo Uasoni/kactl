@@ -1,8 +1,8 @@
 #include "../utilities/template.h"
 #include <unistd.h>
 
-// Same as FastInput.h but within a struct, to be able to reset bc/be from outside.
-struct GC {
+// same as fast_input.h but within a struct, to be able to reset bc/be from outside.
+struct InputReader {
 	char buf[1 << 16];
 	size_t bc = 0, be = 0;
 	char operator()() {
@@ -13,10 +13,10 @@ struct GC {
 		return buf[bc++]; // returns 0 on EOF
 	}
 } gc;
-int readInt() {
+int read_int() {
 	int a, c;
 	while ((a = gc()) < 40);
-	if (a == '-') return -readInt();
+	if (a == '-') return -read_int();
 	while ((c = gc()) >= 48) a = a * 10 + c - 480;
 	return a - 48;
 }
@@ -26,7 +26,7 @@ constexpr int BUF_SIZE = sizeof(gc.buf);
 string tempdirname;
 string tempfilename;
 
-void test(const string& s, vi ints = {}) {
+void test(const string& s, vector<int> ints = {}) {
 	gc.bc = gc.be = 0;
 	ofstream fout(tempfilename);
 	fout << s;
@@ -42,9 +42,9 @@ void test(const string& s, vi ints = {}) {
 		assert(gc() == 0);
 	} else {
 		for (int x : ints) {
-			int y = readInt();
+			int y = read_int();
 			if (x != y) {
-				cerr << "On input " << s << ", read " << y << " but expected " << x << endl;
+				cerr << "on input " << s << ", read " << y << " but expected " << x << endl;
 			}
 			assert(x == y);
 		}
@@ -52,12 +52,12 @@ void test(const string& s, vi ints = {}) {
 }
 
 int main() {
-	// Unit test, not stress test, but oh well.
-	char pattern[] = "/tmp/fastinputXXXXXX";
+	// unit test, not stress test, but oh well.
+	char pattern[] = "/tmp/fast_input_XXXXXX";
 	tempdirname = mkdtemp(pattern);
 	tempfilename = tempdirname + "/stdin.txt";
 
-	// First test that the getchar implementation is correct:
+	// first test that the getchar implementation is correct:
 	test("");
 	test("a");
 	test("ab");
@@ -72,7 +72,7 @@ int main() {
 		assert(gc() == 0);
 	}
 
-	// Then test that readInt() is:
+	// then test that read_int() is:
 	test("1", {1});
 	test("12", {12});
 	test("9\n", {9});
@@ -86,5 +86,5 @@ int main() {
 
 	unlink(tempfilename.c_str());
 	rmdir(tempdirname.c_str());
-	cout << "Tests passed!" << endl;
+	cout << "tests passed!" << endl;
 }

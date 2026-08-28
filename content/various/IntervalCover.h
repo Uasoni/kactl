@@ -1,30 +1,33 @@
 /**
- * Author: Johan Sannemo
+ * Author: johan sannemo
  * License: CC0
- * Description: Compute indices of smallest set of intervals covering another interval.
- * Intervals should be [inclusive, exclusive). To support [inclusive, inclusive],
- * change (A) to add \texttt{|| R.empty()}. Returns empty set on failure (or if G is empty).
+ * Description: compute indices of smallest set of intervals covering another interval.
+ * intervals and the goal are [inclusive, inclusive] integer ranges.
+ * returns 1-indexed interval positions, or an empty set on failure (or if the
+ * goal is empty).
  * Time: O(N \log N)
- * Status: Tested on kattis:intervalcover
+ * Status: tested on kattis:intervalcover
  */
 #pragma once
 
-template<class T>
-vi cover(pair<T, T> G, vector<pair<T, T>> I) {
-	vi S(sz(I)), R;
-	iota(all(S), 0);
-	sort(all(S), [&](int a, int b) { return I[a] < I[b]; });
-	T cur = G.first;
+vector<int> cover(pii goal, vector<pii> intervals) {
+	vector<int> order((int)intervals.size()), result;
+	iota(begin(order), end(order), 0);
+	sort(begin(order), end(order), [&](int a, int b) {
+		return intervals[a] < intervals[b];
+	});
+	int current = goal.first;
 	int at = 0;
-	while (cur < G.second) { // (A)
-		pair<T, int> mx = make_pair(cur, -1);
-		while (at < sz(I) && I[S[at]].first <= cur) {
-			mx = max(mx, make_pair(I[S[at]].second, S[at]));
+	while (current <= goal.second) {
+		pii best = {current - 1, -1};
+		while (at < (int)intervals.size()
+				&& intervals[order[at]].first <= current) {
+			best = max(best, {intervals[order[at]].second, order[at]});
 			at++;
 		}
-		if (mx.second == -1) return {};
-		cur = mx.first;
-		R.push_back(mx.second);
+		if (best.second == -1) return {};
+		current = best.first + 1;
+		result.push_back(best.second + 1);
 	}
-	return R;
+	return result;
 }

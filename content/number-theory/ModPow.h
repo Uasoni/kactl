@@ -1,5 +1,5 @@
 /**
- * Author: Noam527
+ * Author: noam527
  * Date: 2019-04-24
  * License: CC0
  * Source: folklore
@@ -8,11 +8,11 @@
  */
 #pragma once
 
-const ll mod = 1000000007; // faster if const
+const ll MOD = 1000000007;
 
-ll modpow(ll b, ll e) {
+ll mod_pow(ll b, ll e) {
 	ll ans = 1;
-	for (; e; b = b * b % mod, e /= 2)
-		if (e & 1) ans = ans * b % mod;
+	for (; e; b = b * b % MOD, e /= 2)
+		if (e & 1) ans = ans * b % MOD;
 	return ans;
 }

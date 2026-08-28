@@ -4,9 +4,9 @@
 
 template<class F>
 void gen(string& s, int at, int alpha, F f) {
-	if (at == sz(s)) f();
+	if (at == (int)(s).size()) f();
 	else {
-		rep(i,0,alpha) {
+		for (int i = 0; i < (alpha); ++i) {
 			s[at] = (char)('a' + i);
 			gen(s, at+1, alpha, f);
 		}
@@ -14,11 +14,11 @@ void gen(string& s, int at, int alpha, F f) {
 }
 
 void test(const string& s) {
-	vi p = pi(s);
-	rep(i,0,sz(s)) {
+	vector<int> p = pi(s);
+	for (int i = 0; i < ((int)(s).size()); ++i) {
 		int maxlen = -1;
-		rep(len,0,i+1) {
-			rep(j,0,len) {
+		for (int len = 0; len < (i+1); ++len) {
+			for (int j = 0; j < (len); ++j) {
 				if (s[j] != s[i+1 - len + j]) goto fail;
 			}
 			maxlen = len;
@@ -31,18 +31,18 @@ fail:;
 int main() {
 	// string str; cin >> str; for(auto &x: pi(str)) cout << x; cout << endl;
 	// test ~3^12 strings
-	rep(n,0,13) {
+	for (int n = 0; n < (13); ++n) {
 		string s(n, 'x');
 		gen(s, 0, 3, [&]() {
 			test(s);
 		});
 	}
 	// then ~4^10 strings
-	rep(n,0,11) {
+	for (int n = 0; n < (11); ++n) {
 		string s(n, 'x');
 		gen(s, 0, 4, [&]() {
 			test(s);
 		});
 	}
-	cout<<"Tests passed!"<<endl;
+	cout<<"tests passed!"<<endl;
 }

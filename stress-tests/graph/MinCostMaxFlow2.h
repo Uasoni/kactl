@@ -1,41 +1,41 @@
 /**
- * Author: Unknown, Johan Sannemo
- * Date: 2009-04-17
- * Source: tinyKACTL
- * Description: Old min-cost max-flow. Slow, but probably supports negative costs and double edges. Returns (flow, cost).
- * Status: Tested
+ * author: unknown, johan sannemo
+ * date: 2009-04-17
+ * source: tiny_kactl
+ * description: old min-cost max-flow. slow, but probably supports negative costs and double edges. returns (flow, cost).
+ * status: tested
  */
 #pragma once
 
-typedef int Flow;
-Flow inf = 1<<28;
+typedef int flow;
+flow inf = 1<<28;
 
 struct FlowEdge {
 	int dest, back;
-	Flow c, f, cost;
-	Flow r() { return c - f; }
-	FlowEdge(int d, int b, Flow c, Flow cost = 0)
+	flow c, f, cost;
+	flow r() { return c - f; }
+	FlowEdge(int d, int b, flow c, flow cost = 0)
 		: dest(d), back(b), c(c), f(0), cost(cost) {}
 };
 
 template<class G>
 void flow_add_edge(G& g, int s, int t,
-		Flow c, Flow cost = 0) {
+		flow c, flow cost = 0) {
 	assert(s != t);
-	g[s].push_back(FlowEdge(t, sz(g[t]), c, cost));
-	g[t].push_back(FlowEdge(s, sz(g[s]) - 1, 0, cost));
+	g[s].push_back(FlowEdge(t, (int)(g[t]).size(), c, cost));
+	g[t].push_back(FlowEdge(s, (int)(g[s]).size() - 1, 0, cost));
 }
 
 template<class G>
-pair<Flow, Flow> aug(G &g, int s, int t) {
-	int n = sz(g);
-	vi mark(n, -1);
-	vector<Flow> mindist(n, inf);
+pair<flow, flow> aug(G &g, int s, int t) {
+	int n = (int)(g).size();
+	vector<int> mark(n, -1);
+	vector<flow> mindist(n, inf);
 	bool changed = true; mindist[s] = 0;
 	for (int i = 1; !(changed = !changed); ++i)
 		for (int v = 0; v < n; ++v) if (mindist[v] != inf)
 			for(auto &e: g[v]) {
-				Flow dist = mindist[v] + (e.f<0 ? -e.cost : e.cost);
+				flow dist = mindist[v] + (e.f<0 ? -e.cost : e.cost);
 				if (e.r() > 0 && dist < mindist[e.dest]) {
 					if (i >= n) assert(0);// negative cycle! shouldn't be
 					mindist[e.dest] = dist;
@@ -44,7 +44,7 @@ pair<Flow, Flow> aug(G &g, int s, int t) {
 				}
 			}
 	if (mark[t] < 0) return make_pair(0, 0);
-	Flow inc = inf;
+	flow inc = inf;
 	FlowEdge* e; int v = t;
 	while (v != s){
 		e = &g[v][mark[v]];
@@ -59,8 +59,8 @@ pair<Flow, Flow> aug(G &g, int s, int t) {
 }
 
 template<class G>
-pair<Flow, Flow> min_cost_max_flow(G& graph, int s, int t) {
-	pair<Flow, Flow> flow, inc;
+pair<flow, flow> min_cost_max_flow(G& graph, int s, int t) {
+	pair<flow, flow> flow, inc;
 	while ((inc = aug(graph, s, t)).first){
 		flow.first += inc.first;
 		flow.second += inc.second;

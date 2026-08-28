@@ -5,19 +5,19 @@
 
 int main() {
 	srand(2);
-	rep(it,0,1000000) {
-		int N = (rand() % 10) + 1;
+	for (int it = 0; it < (1000000); ++it) {
+		int n = (rand() % 10) + 1;
 		vector<Point<ll>> ps;
-		rep(i,0,N) {
+		for (int i = 0; i < (n); ++i) {
 			ps.emplace_back(rand() % 11 - 5, rand() % 11 - 5);
 		}
 		ll r1 = 0;
-		rep(i,0,N) rep(j,0,i) {
+		for (int i = 0; i < (n); ++i) for (int j = 0; j < (i); ++j) {
 			r1 = max(r1, (ps[i] - ps[j]).dist2());
 		}
-		auto pa = hullDiameter(convexHull(ps));
+		auto pa = hull_diameter(convex_hull(ps));
 		ll r2 = ps.empty() ? 0LL : (pa[0] - pa[1]).dist2();
 		assert(r1 == r2);
 	}
-	cout<<"Tests passed!"<<endl;
+	cout<<"tests passed!"<<endl;
 }

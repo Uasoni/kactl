@@ -1,33 +1,31 @@
 #include "../UnitTest.h"
 #include "../../content/geometry/segmentIntersection.h"
-#include <fstream>
-#include <sstream>
 
-class test_segmentIntersectionDouble :
+class TestSegmentIntersectionDouble :
 	public UnitTest
 {
 public:
 	ifstream in,out;
 	int cases;
-	test_segmentIntersectionDouble() : UnitTest("test_segmentIntersectionDouble") {
-		ifstream file("segmentIntersectionDouble.in");
+	TestSegmentIntersectionDouble() : UnitTest("TestSegmentIntersectionDouble") {
+		ifstream file("segment_intersection_double.in");
 		int n = 0; double d;
 		while (file >> d) ++n;
 		file.close();
 		cases = n/8;
 
-		in.open("segmentIntersectionDouble.in");
-		out.open("segmentIntersectionDouble.out");
+		in.open("segment_intersection_double.in");
+		out.open("segment_intersection_double.out");
 	}
 
-	virtual ~test_segmentIntersectionDouble() { }
+	virtual ~TestSegmentIntersectionDouble() { }
 
 	template<class T>
-	void oldTest(T s1, T e1, T s2, T e2, vector<T> res) {
+	void old_test(T s1, T e1, T s2, T e2, vector<T> res) {
 		stringstream ss;
 		ss << s1 << " " << e1 << " " << s2 << " " << e2;
 		vector<T> v(2);
-		v.resize(segmentIntersection(s1,e1,s2,e2,v[0],v[1]));
+		v.resize(segment_intersection(s1,e1,s2,e2,v[0],v[1]));
 		if (v != res)
 			fail(ss.str());
 		//check(v,res,ss.str());
@@ -37,7 +35,7 @@ public:
 		stringstream ss;
 		ss << s1 << " " << e1 << " " << s2 << " " << e2;
 		T res1, res2;
-		check(segmentIntersection(s1,e1,s2,e2,res1,res2),n,ss.str());
+		check(segment_intersection(s1,e1,s2,e2,res1,res2),n,ss.str());
 		if (n == 1) {
 			ss << " " << n << " " << r1;
 			check(r1,res1,ss.str());
@@ -94,15 +92,15 @@ public:
 		int n;
 		out >> n;
 		vector<Point<double> > v(2);
-		rep(i,0,n) out >> v[i];
+		for (int i = 0; i < (n); ++i) out >> v[i];
 
 		test1(p1,p2,p3,p4,n,v[0],v[1]);
 	}
 
-	virtual int getCount() const
+	virtual int get_count() const
 	{
 		return cases;
 	}
 };
 
-KACTL_AUTOREGISTER_TEST(test_segmentIntersectionDouble);
+KACTL_AUTOREGISTER_TEST(TestSegmentIntersectionDouble);

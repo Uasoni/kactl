@@ -12,88 +12,44 @@ struct OldBarrett {
 	}
 };
 
-// If EIGHT is defined, we compute eight simultaneous factorials, thus measuring
-// throughput instead of latency.
-// #define EIGHT
+constexpr int PARALLEL_VALUES = 1;
+constexpr int BENCHMARK_MODULUS = 90'217'093;
 
-#ifdef EIGHT
-
-// Compute k * (p-1)! % mod p. Should equal -k.
-#define TEST() \
-	INIT(0) \
-	INIT(1) \
-	INIT(2) \
-	INIT(3) \
-	INIT(4) \
-	INIT(5) \
-	INIT(6) \
-	INIT(7) \
-	for (int i = 1; i < mod; i++) { \
-		UPDATE(0) \
-		UPDATE(1) \
-		UPDATE(2) \
-		UPDATE(3) \
-		UPDATE(4) \
-		UPDATE(5) \
-		UPDATE(6) \
-		UPDATE(7) \
-	} \
-	FINISH(0) \
-	FINISH(1) \
-	FINISH(2) \
-	FINISH(3) \
-	FINISH(4) \
-	FINISH(5) \
-	FINISH(6) \
-	FINISH(7)
-
-#else
-
-#define TEST() \
-	INIT(0) \
-	for (int i = 1; i < mod; i++) { \
-		UPDATE(0) \
-	} \
-	FINISH(0)
-
-#endif
-
-void perf_plain(int mod) {
-#define INIT(x) ll ret##x = (x + 1);
-#define UPDATE(x) ret##x = (ret##x * i) % mod;
-#define FINISH(x) cout << ret##x << endl;
-	TEST()
-#undef INIT
-#undef UPDATE
-#undef FINISH
+template<class Reduce>
+void run_benchmark(int modulus, Reduce reduce) {
+	array<ll, PARALLEL_VALUES> results;
+	iota(begin(results), end(results), 1);
+	for (int value = 1; value < modulus; ++value)
+		for (ll& result : results) result = reduce(result, value);
+	for (ll result : results) cout << result << '\n';
 }
 
-template<int mod>
+void perf_plain(int modulus) {
+	run_benchmark(modulus, [&](ll result, int value) {
+		return result * value % modulus;
+	});
+}
+
+template<int MODULUS>
 void perf_const() {
-#define INIT(x) ll ret##x = (x + 1);
-#define UPDATE(x) ret##x = (ret##x * i) % mod;
-#define FINISH(x) cout << ret##x << endl;
-	TEST()
-#undef INIT
-#undef UPDATE
-#undef FINISH
+	run_benchmark(MODULUS, [](ll result, int value) {
+		return result * value % MODULUS;
+	});
 }
 
-#define INIT(x) ll ret##x = (x + 1);
-#define UPDATE(x) ret##x = bar.reduce(ret##x * i);
-#define FINISH(x) cout << ret##x << endl;
-void perf_old_barrett(int mod) {
-	OldBarrett bar(mod);
-	TEST()
+void perf_old_barrett(int modulus) {
+	OldBarrett barrett(modulus);
+	run_benchmark(modulus, [&](ll result, int value) {
+		return (ll)barrett.reduce((ull)result * value);
+	});
 }
 
-void perf_barrett(int mod) {
-	FastMod bar(mod);
-	TEST()
+void perf_barrett(int modulus) {
+	FastMod barrett(modulus);
+	run_benchmark(modulus, [&](ll result, int value) {
+		return (ll)barrett.reduce((ull)result * value);
+	});
 }
-#undef INIT
-#undef UPDATE
-#undef FINISH
 
 ull rand_u64() {
 	ull ret = rand();
@@ -104,19 +60,16 @@ ull rand_u64() {
 	return ret;
 }
 
-#define main1 main
-
-// Correctness
-int main1() {
+void test_correctness() {
 	const int bflim = 3000;
-	rep(a,0,bflim) rep(b,2,bflim) {
+	for (int a = 0; a < (bflim); ++a) for (int b = 2; b < (bflim); ++b) {
 		FastMod bar(b);
 		ull ret = bar.reduce(a);
 		assert((ret == 0) == (a == 0));
 		if (ret >= (ull)b) ret -= b;
 		assert(ret == (ull)(a % b));
 	}
-	rep(it,0,10'000'000) {
+	for (int it = 0; it < (10'000'000); ++it) {
 		ull a = rand_u64();
 		ull b = rand_u64();
 		if (b == 0) continue;
@@ -125,21 +78,18 @@ int main1() {
 		if (ret >= b) ret -= b;
 		assert(ret == a % b);
 	}
-	cout<<"Tests passed!"<<endl;
-	return 0;
+	cout<<"tests passed!"<<endl;
 }
 
-#ifndef MOD
-#define MOD 90217093 //202171241
-#endif
-int mod = MOD;
-
-// Performance
-int main2(int argc, char** argv) {
+int main(int argc, char** argv) {
+	if (argc == 1) {
+		test_correctness();
+		return 0;
+	}
 	int which = atoi(argv[1]);
-	if (which == 0) perf_plain(mod); // 7.529 for 8, 1.714 for 1
-	if (which == 1) perf_const<MOD>(); // 0.971 for 8, 0.499 for 1
-	if (which == 2) perf_old_barrett(mod); // 1.094 for 8, 0.564 for 1
-	if (which == 3) perf_barrett(mod); // 0.870 for 8, 0.405 for 1
+	if (which == 0) perf_plain(BENCHMARK_MODULUS);
+	if (which == 1) perf_const<BENCHMARK_MODULUS>();
+	if (which == 2) perf_old_barrett(BENCHMARK_MODULUS);
+	if (which == 3) perf_barrett(BENCHMARK_MODULUS);
 	return 0;
 }

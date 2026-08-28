@@ -6,7 +6,7 @@
 namespace old {
 #include "oldHLD.h"
 }
-struct bruteforce { // values in nodes
+struct BruteForce { // values in nodes
 	vector<vector<int>> tree;
 	vector<int> vals;
 	vector<int> pars;
@@ -18,115 +18,117 @@ struct bruteforce { // values in nodes
 			if (i != p) root(i, cur);
 		}
 	}
-	bruteforce(vector<vector<int>> _tree): tree(_tree), vals(sz(tree)), pars(sz(tree)) {
-		root(0);
+	BruteForce(vector<vector<int>> _tree): tree(_tree), vals((int)(tree).size()), pars((int)(tree).size()) {
+		root(1, 0);
 	}
-	bool dfsModify(int cur, int target, int val, int p=-1) {
+	bool dfs_modify(int cur, int target, int val, int p=-1) {
 		if (cur == target) {
 			vals[cur] += val;
 			return true;
 		}
-		bool alongPath = false;
+		bool along_path = false;
 		for (auto i: tree[cur]) {
 			if (i == p) continue;
-			alongPath |= dfsModify(i, target, val, cur);
+			along_path |= dfs_modify(i, target, val, cur);
 		}
-		if (alongPath) vals[cur] += val;
-		return alongPath;
+		if (along_path) vals[cur] += val;
+		return along_path;
 	}
-	void modifyPath(int a, int b, int val) {
-		dfsModify(a, b, val);
+	void modify_path(int a, int b, int val) {
+		dfs_modify(a, b, val);
 	}
 
-	int dfsQuery(int cur, int target, int p = -1) {
+	int dfs_query(int cur, int target, int p = -1) {
 		if (cur == target) {
 			return vals[cur];
 		}
 		int res = unit;
 		for (auto i: tree[cur]) {
 			if (i == p) continue;
-			res = f(res, dfsQuery(i, target, cur));
+			res = f(res, dfs_query(i, target, cur));
 		}
 		if (res != unit) {
 			return f(res, vals[cur]);
 		}
 		return res;
 	}
-	int queryPath(int a, int b) {
-		return dfsQuery(a, b);
+	int query_path(int a, int b) {
+		return dfs_query(a, b);
 	}
-	int dfsSubtree(int cur, int p) {
+	int dfs_subtree(int cur, int p) {
 		int res = vals[cur];
 		for (auto i: tree[cur]) {
 			if (i != p)
-				res = f(res, dfsSubtree(i, cur));
+				res = f(res, dfs_subtree(i, cur));
 		}
 		return res;
 	}
-	int querySubtree(int a) {
-		return dfsSubtree(a, pars[a]);
+	int query_subtree(int a) {
+		return dfs_subtree(a, pars[a]);
 	}
 };
 
-void testAgainstOld(int n, int iters, int queries) {
+void test_against_old(int n, int iters, int queries) {
 	for (int trees = 0; trees < iters; trees++) {
-		auto graph = genRandomTree(n);
-		vector<vector<int>> tree1(n);
-		vector<vector<pair<int, int>>> tree2(n);
+		auto graph = gen_random_tree(n);
+		vector<vector<int>> tree1(n + 1);
+		vector<vector<pair<int, int>>> tree2(n + 1);
 		for (auto i : graph) {
-			tree1[i.first].push_back(i.second);
-			tree1[i.second].push_back(i.first);
+			int a = i.first + 1, b = i.second + 1;
+			tree1[a].push_back(b);
+			tree1[b].push_back(a);
 		}
-		for (int i = 0; i < sz(tree1); i++) {
+		for (int i = 1; i <= n; i++) {
 			for (auto j : tree1[i]) {
 				tree2[i].push_back({j, 0});
 			}
 		}
-		HLD<false> hld(tree1);
-		old::HLD hld2(tree2);
-		hld.tree->set(0, n, 0);
+		HeavyLightDecomposition<false> hld(tree1);
+		old::HeavyLightDecomposition hld2(tree2);
+		hld.tree->set(1, n, 0);
 		for (int itr = 0; itr < queries; itr++) {
 			if (rand() % 2) {
-				int node = rand() % n;
+				int node = rand() % n + 1;
 				int val = rand() % 10;
 				hld2.update(node, val);
-				hld.modifyPath(node, node, val - hld.queryPath(node, node));
+				hld.modify_path(node, node, val - hld.query_path(node, node));
 			} else {
-				int a = rand() % n;
-				int b = rand() % n;
-				assert(hld.queryPath(a, b) == hld2.query2(a, b).first);
+				int a = rand() % n + 1;
+				int b = rand() % n + 1;
+				assert(hld.query_path(a, b) == hld2.query2(a, b).first);
 			}
 		}
 	}
 }
-void testAgainstBrute(int n, int iters, int queries) {
+void test_against_brute(int n, int iters, int queries) {
 	for (int trees = 0; trees < iters; trees++) {
-		auto graph = genRandomTree(n);
-		vector<vector<int>> tree1(n);
+		auto graph = gen_random_tree(n);
+		vector<vector<int>> tree1(n + 1);
 		for (auto i : graph) {
-			tree1[i.first].push_back(i.second);
-			tree1[i.second].push_back(i.first);
+			int a = i.first + 1, b = i.second + 1;
+			tree1[a].push_back(b);
+			tree1[b].push_back(a);
 		}
-		HLD<false> hld(tree1);
-		bruteforce hld2(tree1);
-		hld.tree->set(0, n, 0);
+		HeavyLightDecomposition<false> hld(tree1);
+		BruteForce hld2(tree1);
+		hld.tree->set(1, n, 0);
 		for (int itr = 0; itr < queries; itr++) {
 			int rng = rand() % 3;
 			if (rng == 0) {
-				int a = rand() % n;
-				int b = rand() % n;
+				int a = rand() % n + 1;
+				int b = rand() % n + 1;
 				int val = rand() % 10;
-				hld.modifyPath(a, b, val);
-				hld2.modifyPath(a, b, val);
+				hld.modify_path(a, b, val);
+				hld2.modify_path(a, b, val);
 			} else if (rng == 1){
-				int a = rand() % n;
-				int b = rand() % n;
-				hld.queryPath(a, b);
-				hld2.queryPath(a, b);
-				assert(hld.queryPath(a, b) == hld2.queryPath(a, b));
+				int a = rand() % n + 1;
+				int b = rand() % n + 1;
+				hld.query_path(a, b);
+				hld2.query_path(a, b);
+				assert(hld.query_path(a, b) == hld2.query_path(a, b));
 			} else if (rng == 2) {
-				int a = rand() % n;
-				assert(hld.querySubtree(a) == hld2.querySubtree(a));
+				int a = rand() % n + 1;
+				assert(hld.query_subtree(a) == hld2.query_subtree(a));
 			}
 		}
 	}
@@ -134,10 +136,10 @@ void testAgainstBrute(int n, int iters, int queries) {
 }
 int main() {
 	srand(2);
-	testAgainstBrute(5, 1000, 10000);
-	testAgainstBrute(1000, 100, 100);
-	testAgainstOld(5, 1000, 100);
-	testAgainstOld(10000, 100, 1000);
-	cout<<"Tests passed!"<<endl;
+	test_against_brute(5, 1000, 10000);
+	test_against_brute(1000, 100, 100);
+	test_against_old(5, 1000, 100);
+	test_against_old(10000, 100, 1000);
+	cout<<"tests passed!"<<endl;
 	return 0;
 }

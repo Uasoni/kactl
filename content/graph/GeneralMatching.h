@@ -1,10 +1,10 @@
 /**
- * Author: Simon Lindholm
+ * Author: simon lindholm
  * Date: 2016-12-09
  * License: CC0
  * Source: http://www.mimuw.edu.pl/~mucha/pub/mucha_sankowski_focs04.pdf
- * Description: Matching for general graphs.
- * Fails with probability $N / mod$.
+ * Description: matching for general graphs.
+ * fails with probability $N / MOD$.
  * Time: O(N^3)
  * Status: not very well tested
  */
@@ -12,40 +12,41 @@
 
 #include "../numerical/MatrixInverse-mod.h"
 
-vector<pii> generalMatching(int N, vector<pii>& ed) {
-	vector<vector<ll>> mat(N, vector<ll>(N)), A;
-	for (pii pa : ed) {
-		int a = pa.first, b = pa.second, r = rand() % mod;
-		mat[a][b] = r, mat[b][a] = (mod - r) % mod;
+vector<pii> general_matching(int n, vector<pii>& edges) {
+	vector<vector<ll>> mat(n + 1, vector<ll>(n + 1)), inverse;
+	for (pii pa : edges) {
+		int a = pa.first, b = pa.second, r = rand() % MOD;
+		mat[a][b] = r, mat[b][a] = (MOD - r) % MOD;
 	}
 
-	int r = matInv(A = mat), M = 2*N - r, fi, fj;
+	int r = mat_inv(inverse = mat), size = 2*n - r, fi, fj;
 	assert(r % 2 == 0);
 
-	if (M != N) do {
-		mat.resize(M, vector<ll>(M));
-		rep(i,0,N) {
-			mat[i].resize(M);
-			rep(j,N,M) {
-				int r = rand() % mod;
-				mat[i][j] = r, mat[j][i] = (mod - r) % mod;
+	if (size != n) do {
+		mat.resize(size + 1, vector<ll>(size + 1));
+		for (int i = 1; i <= n; ++i) {
+			mat[i].resize(size + 1);
+			for (int j = n + 1; j <= size; ++j) {
+				int r = rand() % MOD;
+				mat[i][j] = r, mat[j][i] = (MOD - r) % MOD;
 			}
 		}
-	} while (matInv(A = mat) != M);
+	} while (mat_inv(inverse = mat) != size);
 
-	vi has(M, 1); vector<pii> ret;
-	rep(it,0,M/2) {
-		rep(i,0,M) if (has[i])
-			rep(j,i+1,M) if (A[i][j] && mat[i][j]) {
+	vector<int> has(size + 1, 1); vector<pii> ret;
+	for (int it = 0; it < size/2; ++it) {
+		for (int i = 1; i <= size; ++i) if (has[i])
+			for (int j = i+1; j <= size; ++j) if (inverse[i][j] && mat[i][j]) {
 				fi = i; fj = j; goto done;
 		} assert(0); done:
-		if (fj < N) ret.emplace_back(fi, fj);
+		if (fj <= n) ret.emplace_back(fi, fj);
 		has[fi] = has[fj] = 0;
-		rep(sw,0,2) {
-			ll a = modpow(A[fi][fj], mod-2);
-			rep(i,0,M) if (has[i] && A[i][fj]) {
-				ll b = A[i][fj] * a % mod;
-				rep(j,0,M) A[i][j] = (A[i][j] - A[fi][j] * b) % mod;
+		for (int sw = 0; sw < (2); ++sw) {
+			ll a = mod_pow(inverse[fi][fj], MOD - 2);
+			for (int i = 1; i <= size; ++i) if (has[i] && inverse[i][fj]) {
+				ll b = inverse[i][fj] * a % MOD;
+				for (int j = 1; j <= size; ++j)
+					inverse[i][j] = (inverse[i][j] - inverse[fi][j] * b) % MOD;
 			}
 			swap(fi,fj);
 		}

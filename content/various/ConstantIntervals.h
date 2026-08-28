@@ -1,32 +1,35 @@
 /**
- * Author: Simon Lindholm
+ * Author: simon lindholm
  * Date: 2015-03-20
  * License: CC0
  * Source: me
- * Description: Split a monotone function on [from, to) into a minimal set of half-open intervals on which it has the same value.
- *  Runs a callback g for each such interval.
- * Usage: constantIntervals(0, sz(v), [\&](int x){return v[x];}, [\&](int lo, int hi, T val){...});
+ * Description: split a monotone function on [from, to] into a minimal set of
+ *  inclusive intervals on which it has the same value.
+ *  runs a callback g for each such interval.
+ * Usage: constant_intervals(1, n, f, [\&](int lo, int hi, T val){...});
  * Time: O(k\log\frac{n}{k})
  * Status: tested
  */
 #pragma once
 
 template<class F, class G, class T>
-void rec(int from, int to, F& f, G& g, int& i, T& p, T q) {
-	if (p == q) return;
+void constant_intervals_rec(int from, int to, F& f, G& g,
+		int& start, T& previous, T current) {
+	if (previous == current) return;
 	if (from == to) {
-		g(i, to, p);
-		i = to; p = q;
+		g(start, to - 1, previous);
+		start = to; previous = current;
 	} else {
 		int mid = (from + to) >> 1;
-		rec(from, mid, f, g, i, p, f(mid));
-		rec(mid+1, to, f, g, i, p, q);
+		constant_intervals_rec(from, mid, f, g, start, previous, f(mid));
+		constant_intervals_rec(mid + 1, to, f, g, start, previous, current);
 	}
 }
 template<class F, class G>
-void constantIntervals(int from, int to, F f, G g) {
-	if (to <= from) return;
-	int i = from; auto p = f(i), q = f(to-1);
-	rec(from, to-1, f, g, i, p, q);
-	g(i, to, q);
+void constant_intervals(int from, int to, F f, G g) {
+	if (to < from) return;
+	int start = from;
+	auto previous = f(from), current = f(to);
+	constant_intervals_rec(from, to, f, g, start, previous, current);
+	g(start, to, current);
 }

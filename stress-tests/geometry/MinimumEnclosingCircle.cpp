@@ -1,29 +1,30 @@
 #include "../utilities/template.h"
 
 #include "../../content/geometry/MinimumEnclosingCircle.h"
+typedef Point<double> point_type;
 
 int main() {
 	srand(2);
-	rep(it,0,1000000) {
-		int N = rand() % 20 + 1;
-		// int N = 4;
-		vector<P> ps;
-		rep(i,0,N) {
+	for (int it = 0; it < (1000000); ++it) {
+		int n = rand() % 20 + 1;
+		// int n = 4;
+		vector<point_type> ps;
+		for (int i = 0; i < (n); ++i) {
 			ps.emplace_back(rand() % 21 - 10, rand() % 21 - 10);
 		}
 
-		pair<P, double> pa = mec(ps);
-		P mid = pa.first;
+		pair<point_type, double> pa = minimum_enclosing_circle(ps);
+		point_type mid = pa.first;
 		double rad = pa.second;
-		double maxDist = 0;
+		double max_dist = 0;
 		for(auto &p: ps) {
-			maxDist = max(maxDist, (p - mid).dist());
+			max_dist = max(max_dist, (p - mid).dist());
 		}
 
-		assert(abs(maxDist - rad) < 1e-6);
+		assert(abs(max_dist - rad) < 1e-6);
 
-		rep(it2,0,50) {
-			P q2 = mid - P(0, 1e-6).rotate(it2);
+		for (int it2 = 0; it2 < (50); ++it2) {
+			point_type q2 = mid - point_type(0, 1e-6).rotate(it2);
 			for(auto &p: ps) {
 				if((p - q2).dist() > rad - 1e-7) goto fail;
 			}
@@ -31,5 +32,5 @@ int main() {
 fail:;
 		}
 	}
-	cout<<"Tests passed!"<<endl;
+	cout<<"tests passed!"<<endl;
 }

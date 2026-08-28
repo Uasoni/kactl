@@ -1,31 +1,32 @@
 /**
- * Author: Lucian Bicsi
+ * Author: lucian bicsi
  * Date: 2017-10-31
  * License: CC0
  * Source: folklore
- * Description: Zero-indexed max-tree. Bounds are inclusive to the left and exclusive to the right.
- * Can be changed by modifying T, f and unit.
+ * Description: 1-indexed max-tree with inclusive range bounds.
+ * can be changed by modifying value\_type, f and UNIT.
  * Time: O(\log N)
  * Status: stress-tested
  */
 #pragma once
 
-struct Tree {
-	typedef int T;
-	static constexpr T unit = INT_MIN;
-	T f(T a, T b) { return max(a, b); } // (any associative fn)
-	vector<T> s; int n;
-	Tree(int n = 0, T def = unit) : s(2*n, def), n(n) {}
-	void update(int pos, T val) {
-		for (s[pos += n] = val; pos /= 2;)
+struct SegmentTree {
+	typedef int value_type;
+	static constexpr value_type UNIT = INT_MIN;
+	value_type f(value_type a, value_type b) { return max(a, b); }
+	vector<value_type> s; int n;
+	SegmentTree(int n = 0, value_type def = UNIT) : s(2*n, def), n(n) {}
+	void update(int pos, value_type val) {
+		for (s[pos += n - 1] = val; pos /= 2;)
 			s[pos] = f(s[pos * 2], s[pos * 2 + 1]);
 	}
-	T query(int b, int e) { // query [b, e)
-		T ra = unit, rb = unit;
-		for (b += n, e += n; b < e; b /= 2, e /= 2) {
-			if (b % 2) ra = f(ra, s[b++]);
-			if (e % 2) rb = f(s[--e], rb);
+	value_type query(int left, int right) { // query [left, right]
+		value_type left_result = UNIT, right_result = UNIT;
+		for (left += n - 1, right += n; left < right;
+				left /= 2, right /= 2) {
+			if (left % 2) left_result = f(left_result, s[left++]);
+			if (right % 2) right_result = f(s[--right], right_result);
 		}
-		return f(ra, rb);
+		return f(left_result, right_result);
 	}
 };

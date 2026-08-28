@@ -1,8 +1,8 @@
 /**
- * Author: someone on Codeforces
+ * Author: someone on codeforces
  * Date: 2017-03-14
  * Source: folklore
- * Description: A short self-balancing tree. It acts as a
+ * Description: A short self-balancing tree. it acts as a
  *  sequential container with log-time splits/joins, and
  *  is easy to augment with additional data.
  * Time: $O(\log N)$
@@ -10,36 +10,36 @@
  */
 #pragma once
 
-struct Node {
-	Node *l = 0, *r = 0;
+struct TreapNode {
+	TreapNode *l = 0, *r = 0;
 	int val, y, c = 1;
-	Node(int val) : val(val), y(rand()) {}
+	TreapNode(int val) : val(val), y(rand()) {}
 	void recalc();
 };
 
-int cnt(Node* n) { return n ? n->c : 0; }
-void Node::recalc() { c = cnt(l) + cnt(r) + 1; }
+int cnt(TreapNode* n) { return n ? n->c : 0; }
+void TreapNode::recalc() { c = cnt(l) + cnt(r) + 1; }
 
-template<class F> void each(Node* n, F f) {
+template<class F> void each(TreapNode* n, F f) {
 	if (n) { each(n->l, f); f(n->val); each(n->r, f); }
 }
 
-pair<Node*, Node*> split(Node* n, int k) {
+pair<TreapNode*, TreapNode*> split(TreapNode* n, int k) {
 	if (!n) return {};
 	if (cnt(n->l) >= k) { // "n->val >= k" for lower_bound(k)
-		auto [L,R] = split(n->l, k);
-		n->l = R;
+		auto [left, right] = split(n->l, k);
+		n->l = right;
 		n->recalc();
-		return {L, n};
+		return {left, n};
 	} else {
-		auto [L,R] = split(n->r,k - cnt(n->l) - 1); // and just "k"
-		n->r = L;
+		auto [left, right] = split(n->r,k - cnt(n->l) - 1); // and just "k"
+		n->r = left;
 		n->recalc();
-		return {n, R};
+		return {n, right};
 	}
 }
 
-Node* merge(Node* l, Node* r) {
+TreapNode* merge(TreapNode* l, TreapNode* r) {
 	if (!l) return r;
 	if (!r) return l;
 	if (l->y > r->y) {
@@ -51,15 +51,20 @@ Node* merge(Node* l, Node* r) {
 	}
 }
 
-Node* ins(Node* t, Node* n, int pos) {
+TreapNode* insert_at_internal(TreapNode* t, TreapNode* n, int pos) {
 	auto [l,r] = split(t, pos);
 	return merge(merge(l, n), r);
 }
 
-// Example application: move the range [l, r) to index k
-void move(Node*& t, int l, int r, int k) {
-	Node *a, *b, *c;
+TreapNode* insert_at(TreapNode* tree, TreapNode* node, int position) {
+	return insert_at_internal(tree, node, position - 1);
+}
+
+// move the 1-indexed inclusive range [left, right] to position target
+void move(TreapNode*& t, int left, int right, int target) {
+	int l = left - 1, r = right, k = target - 1;
+	TreapNode *a, *b, *c;
 	tie(a,b) = split(t, l); tie(b,c) = split(b, r - l);
-	if (k <= l) t = merge(ins(a, b, k), c);
-	else t = merge(a, ins(c, b, k - r));
+	if (k <= l) t = merge(insert_at_internal(a, b, k), c);
+	else t = merge(a, insert_at_internal(c, b, k - r));
 }

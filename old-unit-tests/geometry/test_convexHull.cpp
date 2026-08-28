@@ -1,7 +1,5 @@
 #include "../UnitTest.h"
 #include "../../content/geometry/convexHull.h"
-#include <fstream>
-#include <sstream>
 typedef Point<double> P;
 
 template<class T>
@@ -12,40 +10,40 @@ ostream & operator<<(ostream & os, const vector<T> p) {
 	return os;
 }
 
-class test_convexHull : public UnitTest {
+class TestConvexHull : public UnitTest {
 public:
 	ifstream in;
 	int cases;
-	test_convexHull() : UnitTest("test_convexHull") {
-		ifstream file("convexHull.data");
+	TestConvexHull() : UnitTest("TestConvexHull") {
+		ifstream file("convex_hull.data");
 		int N = 0, n;
 		while (file >> n) {
 			double d;
-			rep(i,0,n) file >> d >> d;
+			for (int i = 0; i < (n); ++i) file >> d >> d;
 			++N;
 		}
 		cases = N/2;
 		file.close();
 
-		in.open("convexHull.data");
+		in.open("convex_hull.data");
 	}
 
-	virtual ~test_convexHull() {
+	virtual ~TestConvexHull() {
 		in.close();
 	}
 
-	vector<P> readPolygon() {
+	vector<P> read_polygon() {
 		int n;
 		in >> n;
 		vector<P> p(n);
-		rep(i,0,n) in >> p[i];
+		for (int i = 0; i < (n); ++i) in >> p[i];
 		return p;
 	}
 
 
 	virtual void run(int subcase) {
-		vector<P> p = readPolygon(), wanted = readPolygon();
-		vector<P> res(p.begin(),convexHull(p.begin(),p.end()));
+		vector<P> p = read_polygon(), wanted = read_polygon();
+		vector<P> res(p.begin(),convex_hull(p.begin(),p.end()));
 
 		sort(res.begin(),res.end());
 		sort(wanted.begin(),wanted.end());
@@ -53,7 +51,7 @@ public:
 		ss << p << endl << " -> " << res << endl << "!=" << wanted << endl;
 		string s = ss.str();
 		check(res.size(),wanted.size(),s);
-		rep(i,0,res.size())
+		for (int i = 0; i < (res.size()); ++i)
 			if (!(res[i] == wanted[i]))
 				fail(s);
 	}
@@ -62,24 +60,24 @@ public:
 	    run(subcase);
 		typedef Point<double> P;
 		P p1[3] = {P(1,1),P(3,2),P(1,5)};
-		check(convexHull(p1,p1+3),p1+3);
+		check(convex_hull(p1,p1+3),p1+3);
 
 		P p2[] = {P(0,0),P(1,0),P(2,0),P(2,1),P(2,2),P(1,2),P(0,2),P(0,1)};
-		int n = convexHull(p2,p2+8)-p2;
+		int n = convex_hull(p2,p2+8)-p2;
 		cout << endl << n << " ";
-		rep(i,0,n) cout << p2[i] << " ";
+		for (int i = 0; i < (n); ++i) cout << p2[i] << " ";
 		cout << endl;
 
 		P p3[] = {P(0,0),P(1,0),P(2,0),P(2,1),P(2,2),P(1,2),P(0,2),P(1,1)};
-		n = convexHull(p3,p3+8)-p3;
+		n = convex_hull(p3,p3+8)-p3;
 		cout << endl << n << " ";
-		rep(i,0,n) cout << p2[i] << " ";
+		for (int i = 0; i < (n); ++i) cout << p2[i] << " ";
 		cout << endl;
 	}
 
-	virtual int getCount() const {
+	virtual int get_count() const {
 		return cases;
 	}
 };
 
-KACTL_AUTOREGISTER_TEST(test_convexHull);
+KACTL_AUTOREGISTER_TEST(TestConvexHull);

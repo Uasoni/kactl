@@ -6,23 +6,23 @@
 
 int main() {
 	srand(0);
-	typedef Point<double> P;
-	vector<P> ps = {P{0,0}, P{6,4}, P{0,9}};
+	typedef Point<double> point_type;
+	vector<point_type> ps = {point_type{0,0}, point_type{6,4}, point_type{0,9}};
 	int count = 0;
-	P su{0,0};
-	rep(it,0,100000) {
+	point_type su{0,0};
+	for (int it = 0; it < (100000); ++it) {
 		double x = rand() / (RAND_MAX + 1.0);
 		double y = rand() / (RAND_MAX + 1.0);
 		x *= 10;
 		y *= 10;
-		if (!inPolygon(ps, P{x,y}, true)) continue;
+		if (!in_polygon(ps, point_type{x,y}, true)) continue;
 		count++;
-		su = su + P{x,y};
+		su = su + point_type{x,y};
 	}
 	su = su / count;
-	double approxArea = (double)count / 100000 * 100;
-	assert(abs(polygonArea2(ps)/2.0 - approxArea) < 1);
-	auto p = polygonCenter(ps);
+	double approx_area = (double)count / 100000 * 100;
+	assert(abs(polygon_area2(ps)/2.0 - approx_area) < 1);
+	auto p = polygon_center(ps);
 	assert(abs(p.x - su.x) < 1e-1 && abs(p.y - su.y) < 1e-1);
-	cout<<"Tests passed!"<<endl;
+	cout<<"tests passed!"<<endl;
 }

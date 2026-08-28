@@ -4,47 +4,49 @@
 
 template<>
 struct Point<double> {
-	typedef Point P;
+	typedef Point point_type;
 	typedef double T;
 	T x, y;
 	explicit Point(T x=0, T y=0) : x(x), y(y) {}
 	Point(const Point<ll>& other) : x((double)other.x), y((double)other.y) {}
-	P& operator=(const Point<ll>& other) { x = (double)other.x; y = (double)other.y; return *this; }
-	bool operator==(const Point<ll>& other) const { return *this == P(other); }
-	bool operator<(P p) const { return x<p.x||(x==p.x && y<p.y);}
-	bool operator==(P p) const { return x==p.x && y==p.y; }
-	P operator+(P p) const { return P(x+p.x, y+p.y); }
-	P operator-(P p) const { return P(x-p.x, y-p.y); }
-	P operator*(T d) const { return P(x*d, y*d); }
-	P operator/(T d) const { return P(x/d, y/d); }
-	T dot(P p) const { return x*p.x + y*p.y; }
-	T cross(P p) const { return x*p.y - y*p.x; }
-	T cross(P a, P b) const { return (a-*this).cross(b-*this); }
+	point_type& operator=(const Point<ll>& other) { x = (double)other.x; y = (double)other.y; return *this; }
+	bool operator==(const Point<ll>& other) const { return *this == point_type(other); }
+	bool operator<(point_type p) const { return x<p.x||(x==p.x && y<p.y);}
+	bool operator==(point_type p) const { return x==p.x && y==p.y; }
+	point_type operator+(point_type p) const { return point_type(x+p.x, y+p.y); }
+	point_type operator-(point_type p) const { return point_type(x-p.x, y-p.y); }
+	point_type operator*(T d) const { return point_type(x*d, y*d); }
+	point_type operator/(T d) const { return point_type(x/d, y/d); }
+	T dot(point_type p) const { return x*p.x + y*p.y; }
+	T cross(point_type p) const { return x*p.y - y*p.x; }
+	T cross(point_type a, point_type b) const { return (a-*this).cross(b-*this); }
 	T dist2() const { return x*x + y*y; }
 	double dist() const { return sqrt((double)dist2()); }
-	// angle to x-axis in interval [-pi, pi]
+	// Angle to x-axis in interval [-pi, pi]
 	double angle() const { return atan2(y, x); }
-	P unit() const { return *this/dist(); } // makes dist()=1
-	P perp() const { return P(-y, x); } // rotates +90 degrees
-	P normal() const { return perp().unit(); }
-	// returns point rotated 'a' radians ccw around the origin
-	P rotate(double a) const {
-		return P(x*cos(a)-y*sin(a),x*sin(a)+y*cos(a)); }
+	point_type unit() const { return *this/dist(); } // makes dist()=1
+	point_type perp() const { return point_type(-y, x); } // rotates +90 degrees
+	point_type normal() const { return perp().unit(); }
+	// returns Point rotated 'a' radians ccw around the origin
+	point_type rotate(double a) const {
+		return point_type(x*cos(a)-y*sin(a),x*sin(a)+y*cos(a)); }
 };
+
+typedef Point<ll> point_type;
 
 #include "../../content/geometry/ConvexHull.h"
 #include "../../content/geometry/LineHullIntersection.h"
 
-int segmentIntersection(const P& s1, const P& e1,
-		const P& s2, const P& e2, Point<double>& r1, Point<double>& r2) {
+int segment_intersection(const point_type& s1, const point_type& e1,
+		const point_type& s2, const point_type& e2, Point<double>& r1, Point<double>& r2) {
 	if (e1==s1) {
 		if (e2==s2) {
 			if (e1==e2) { r1 = e1; return 1; } //all equal
-			else return 0; //different point segments
-		} else return segmentIntersection(s2,e2,s1,e1,r1,r2);//swap
+			else return 0; //different Point segments
+		} else return segment_intersection(s2,e2,s1,e1,r1,r2);//swap
 	}
 	//segment directions and separation
-	P v1 = e1-s1, v2 = e2-s2, d = s2-s1;
+	point_type v1 = e1-s1, v2 = e2-s2, d = s2-s1;
 	auto a = v1.cross(v2), a1 = v1.cross(d), a2 = v2.cross(d);
 	if (a == 0) { //if parallel
 		auto b1=s1.dot(v1), c1=e1.dot(v1),
@@ -65,28 +67,28 @@ int segmentIntersection(const P& s1, const P& e1,
 
 int main() {
 	srand(2);
-	rep(it,0,1000000) {
+	for (int it = 0; it < (1000000); ++it) {
 		// cout<<endl;
 		// cout<<"it: "<<it<<endl;
-		int N = rand() % 15;
-		vector<P> ps2;
-		rep(i,0,N) ps2.emplace_back(rand() % 20 - 10, rand() % 20 - 10);
-		vector<P> ps = convexHull(ps2);
+		int n = rand() % 15;
+		vector<point_type> ps2;
+		for (int i = 0; i < (n); ++i) ps2.emplace_back(rand() % 20 - 10, rand() % 20 - 10);
+		vector<point_type> ps = convex_hull(ps2);
 		if (ps.empty()) continue;
-		P p{rand() % 20 - 10, rand() % 20 - 10};
-		P q{rand() % 20 - 10, rand() % 20 - 10};
+		point_type p{rand() % 20 - 10, rand() % 20 - 10};
+		point_type q{rand() % 20 - 10, rand() % 20 - 10};
 
-		N = sz(ps);
+		n = (int)(ps).size();
 
-		P delta = q - p, farp = p - delta * 50, farq = p + delta * 50;
+		point_type delta = q - p, farp = p - delta * 50, farq = p + delta * 50;
 
-		auto res = lineHull(p, q, ps);
+		auto res = line_hull(p, q, ps);
 		pii r = {res[0], res[1]};
 
 		if (p == q) continue;
 
 		auto fail = [&](int line) {
-			cerr << sz(ps) << endl;
+			cerr << (int)(ps).size() << endl;
 			for(auto &p: ps) cout << p<<' ';
 			cout<<endl;
 			cout << "line: "<<p<<' '<<q<<endl;
@@ -94,17 +96,20 @@ int main() {
 			cout << "@line " << line << endl;
 			abort();
 		};
-#define FAIL() fail(__LINE__)
+		auto require = [&](bool condition,
+			const source_location& location = source_location::current()) {
+			if (!condition) fail((int)location.line());
+		};
 
 		int any = 0, gen = 0, corner = -1, waspar = 0;
 		vector<pair<Point<double>, int>> hits;
-		rep(iter,0,2) rep(i,0,N) {
+		for (int iter = 0; iter < (2); ++iter) for (int i = 0; i < (n); ++i) {
 			Point<double> r1, r2;
-			int j = (i+1) % N;
-			int qu = segmentIntersection(farp, farq, ps[i], ps[j], r1, r2);
+			int j = (i+1) % n;
+			int qu = segment_intersection(farp, farq, ps[i], ps[j], r1, r2);
 			if (qu && (q - p).cross(ps[j] - ps[i]) == 0) { // parallel
-				if (N != 2) {
-					if (!(r.first == i || r.second == i)) FAIL();
+				if (n != 2) {
+					require(r.first == i || r.second == i);
 				}
 				// cerr << i << ' ' << j << ' ' << r.first << ' ' << r.second << endl;
 				// assert(r.first == i && r.second == j);
@@ -115,21 +120,21 @@ int main() {
 			else if (qu) {
 				assert(qu != 2);
 				if (r1 == ps[i]) {
-					int k = (i-1+N) % N;
-					if (!(r.first == i || r.second == i || r.first == k || r.second == k)) FAIL();
-					if (iter == 1 && !waspar && !(r.first == i || r.second == i)) FAIL();
+					int k = (i-1+n) % n;
+					require(r.first == i || r.second == i || r.first == k || r.second == k);
+					if (iter == 1 && !waspar) require(r.first == i || r.second == i);
 					if (iter == 0) corner = i;
 					if (iter == 0) gen++;
 					if (iter == 0) hits.emplace_back(r1, i);
 				}
 				else if (r1 == ps[j]) {
-					if (!(r.first == i || r.second == i || r.first == j || r.second == j)) FAIL();
-					if (iter == 1 && !waspar && !(r.first == j || r.second == j)) FAIL();
+					require(r.first == i || r.second == i || r.first == j || r.second == j);
+					if (iter == 1 && !waspar) require(r.first == j || r.second == j);
 					if (iter == 0) corner = j;
 					if (iter == 0) gen++;
 				}
 				else {
-					if (!(r.first == i || r.second == i)) FAIL();
+					require(r.first == i || r.second == i);
 					if (iter == 0) gen = 10;
 					if (iter == 0) hits.emplace_back(r1, i);
 				}
@@ -142,18 +147,18 @@ int main() {
 			continue;
 		}
 		if (!waspar) {
-			if (r.first == r.second) FAIL();
+			require(r.first != r.second);
 		}
 		if (gen == 2) {
 			assert(r.first == corner);
-			if (r.second != -1) FAIL();
+			require(r.second == -1);
 		}
-		if (N > 2 && (sz(hits) == 1) != (r.second == -1 || r.first == r.second)) {
+		if (n > 2 && ((int)(hits).size() == 1) != (r.second == -1 || r.first == r.second)) {
 			cout<<"res: "<<r.first<<' '<<r.second<<endl;
-			FAIL();
+			require(false);
 		}
-		assert(sz(hits) <= 2);
-		if (r.first != r.second && sz(hits) == 2) {
+		assert((int)(hits).size() <= 2);
+		if (r.first != r.second && (int)(hits).size() == 2) {
 			assert(r.second != -1);
 			assert(hits[0].second != hits[1].second);
 			assert(hits[0].second == r.first || hits[0].second == r.second);
@@ -161,19 +166,19 @@ int main() {
 			double dist0 = (hits[0].first - Point<double>(p)).dot(delta);
 			double dist1 = (hits[1].first - Point<double>(p)).dot(delta);
 			if (hits[0].second == r.first) {
-				if (!(dist0 <= dist1)) FAIL();
+				require(dist0 <= dist1);
 			}
 			else {
-				if (!(dist0 >= dist1)) FAIL();
+				require(dist0 >= dist1);
 			}
 		}
 
-		res = lineHull(q, p, ps);
+		res = line_hull(q, p, ps);
 		pii R = {res[0], res[1]};
 		if (r.second == -1) {
 			assert(R == r);
 		}
-		else if (N == 2 && r.first == r.second) {
+		else if (n == 2 && r.first == r.second) {
 			assert(R.first == R.second);
 		}
 		else {
@@ -181,5 +186,5 @@ int main() {
 			assert(R.second == r.first);
 		}
 	}
-	cout<<"Tests passed!"<<endl;
+	cout<<"tests passed!"<<endl;
 }

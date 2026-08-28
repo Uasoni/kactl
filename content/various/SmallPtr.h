@@ -1,18 +1,18 @@
 /**
- * Author: Simon Lindholm
+ * Author: simon lindholm
  * Date: 2016-08-23
  * License: CC0
  * Source: me
- * Description: A 32-bit pointer that points into BumpAllocator memory.
+ * Description: A 32-bit pointer that points into bump\_allocator memory.
  * Status: tested
  */
 #pragma once
 
 #include "BumpAllocator.h"
 
-template<class T> struct ptr {
+template<class T> struct SmallPtr {
 	unsigned ind;
-	ptr(T* p = 0) : ind(p ? unsigned((char*)p - buf) : 0) {
+	SmallPtr(T* p = 0) : ind(p ? unsigned((char*)p - buf) : 0) {
 		assert(ind < sizeof buf);
 	}
 	T& operator*() const { return *(T*)(buf + ind); }

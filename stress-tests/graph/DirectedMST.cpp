@@ -1,13 +1,13 @@
 #include "../utilities/template.h"
 
-struct Bumpalloc {
+struct BumpAllocator {
 	char buf[450 << 20];
 	size_t bufp;
 	void* alloc(size_t s) {
 		assert(s < bufp);
 		return (void*)&buf[bufp -= s];
 	}
-	Bumpalloc() { reset(); }
+	BumpAllocator() { reset(); }
 
 	template<class T> T* operator=(T&& x) {
 		T* r = (T*)alloc(sizeof(T));
@@ -15,11 +15,11 @@ struct Bumpalloc {
 		return r;
 	}
 	void reset() { bufp = sizeof buf; }
-} bumpalloc;
+} BumpAllocator;
 
-// When not testing perf, we don't want to leak memory
+// when not testing perf, we don't want to leak memory
 #ifndef TEST_PERF
-#define new bumpalloc =
+#define new BumpAllocator =
 #endif
 #include "../../content/graph/DirectedMST.h"
 #ifndef TEST_PERF
@@ -28,73 +28,74 @@ struct Bumpalloc {
 
 namespace mit {
 
-#define N 110000
-#define M 110000
-#define inf 2000000000
+constexpr int MAX_VERTICES = 110'000;
+constexpr int MAX_EDGES = 110'000;
+constexpr int INF = 2'000'000'000;
 
-struct edg {
+struct DirectedEdge {
 		int u, v;
 		int cost;
-} E[M], E_copy[M];
+} edges[MAX_EDGES], edge_copy[MAX_EDGES];
 
-int In[N], ID[N], vis[N], pre[N];
+int incoming[MAX_VERTICES], component_id[MAX_VERTICES];
+int visited[MAX_VERTICES], previous[MAX_VERTICES];
 
 // edges pointed from root.
-int Directed_MST(int root, int NV, int NE) {
-	for (int i = 0; i < NE; i++)
-		E_copy[i] = E[i];
+int directed_mst(int root, int vertex_count, int edge_count) {
+	for (int i = 0; i < edge_count; i++)
+		edge_copy[i] = edges[i];
 	int ret = 0;
 	int u, v;
 	while (true) {
-		rep(i,0,NV)   In[i] = inf;
-		rep(i,0,NE) {
-			u = E_copy[i].u;
-			v = E_copy[i].v;
-			if(E_copy[i].cost < In[v] && u != v) {
-				In[v] = E_copy[i].cost;
-				pre[v] = u;
+		for (int i = 0; i < vertex_count; ++i) incoming[i] = INF;
+		for (int i = 0; i < (edge_count); ++i) {
+			u = edge_copy[i].u;
+			v = edge_copy[i].v;
+			if(edge_copy[i].cost < incoming[v] && u != v) {
+				incoming[v] = edge_copy[i].cost;
+				previous[v] = u;
 			}
 		}
-		rep(i,0,NV) {
+		for (int i = 0; i < (vertex_count); ++i) {
 			if(i == root)   continue;
-			if(In[i] == inf)    return -1; // no solution
+			if(incoming[i] == INF) return -1; // no solution
 		}
 
 		int cnt = 0;
-		rep(i,0,NV) {
-			ID[i] = -1;
-			vis[i] = -1;
+		for (int i = 0; i < (vertex_count); ++i) {
+			component_id[i] = -1;
+			visited[i] = -1;
 		}
-		In[root] = 0;
+		incoming[root] = 0;
 
-		rep(i,0,NV) {
-			ret += In[i];
+		for (int i = 0; i < (vertex_count); ++i) {
+			ret += incoming[i];
 			int v = i;
-			while(vis[v] != i && ID[v] == -1 && v != root) {
-				vis[v] = i;
-				v = pre[v];
+			while(visited[v] != i && component_id[v] == -1 && v != root) {
+				visited[v] = i;
+				v = previous[v];
 			}
-			if(v != root && ID[v] == -1) {
-				for(u = pre[v]; u != v; u = pre[u]) {
-					ID[u] = cnt;
+			if(v != root && component_id[v] == -1) {
+				for(u = previous[v]; u != v; u = previous[u]) {
+					component_id[u] = cnt;
 				}
-				ID[v] = cnt++;
+				component_id[v] = cnt++;
 			}
 		}
 		if(cnt == 0)    break;
-		rep(i,0,NV) {
-			if(ID[i] == -1) ID[i] = cnt++;
+		for (int i = 0; i < (vertex_count); ++i) {
+			if(component_id[i] == -1) component_id[i] = cnt++;
 		}
-		rep(i,0,NE) {
-			v = E_copy[i].v;
-			E_copy[i].u = ID[E_copy[i].u];
-			E_copy[i].v = ID[E_copy[i].v];
-			if(E_copy[i].u != E_copy[i].v) {
-				E_copy[i].cost -= In[v];
+		for (int i = 0; i < (edge_count); ++i) {
+			v = edge_copy[i].v;
+			edge_copy[i].u = component_id[edge_copy[i].u];
+			edge_copy[i].v = component_id[edge_copy[i].v];
+			if(edge_copy[i].u != edge_copy[i].v) {
+				edge_copy[i].cost -= incoming[v];
 			}
 		}
-		NV = cnt;
-		root = ID[root];
+		vertex_count = cnt;
+		root = component_id[root];
 	}
 	return ret;
 }
@@ -102,31 +103,31 @@ int Directed_MST(int root, int NV, int NE) {
 
 int adj[105][105];
 int main() {
-	rep(it,0,50000) {
-		bumpalloc.reset();
+	for (int it = 0; it < (50000); ++it) {
+		BumpAllocator.reset();
 		int n = (rand()%20)+1;
 		int density = rand() % 101;
 		int r = rand()%n;
 		int cnt = 0;
 		vector<Edge> edges;
-		rep(i,0,n)
-			rep(j,0,n){
+		for (int i = 0; i < (n); ++i)
+			for (int j = 0; j < (n); ++j){
 				if (i==j) continue;
 				if (rand() % 100 >= density) continue;
 				int weight = rand()%100;
-				mit::E[cnt++] = {i,j, weight};
-				edges.push_back({i,j,weight});
+				mit::edges[cnt++] = {i,j, weight};
+				edges.push_back({i + 1, j + 1, weight});
 				adj[i][j] = weight;
 			}
 
-		ll ans1 = mit::Directed_MST(r, n, cnt);
-		auto pa = dmst(n, r, edges);
+		ll ans1 = mit::directed_mst(r, n, cnt);
+		auto pa = dmst(n, r + 1, edges);
 		ll ans2 = pa.first;
 		assert(ans1 == ans2);
 
-		// Verifying reconstruction:
+		// verifying reconstruction:
 		if (ans1 != -1) {
-			vi par = pa.second;
+			vector<int> par = pa.second;
 			if (0) {
 				cout << "r = " << r << endl;
 				for(auto &x: par) cout << x << ' ';
@@ -136,25 +137,26 @@ int main() {
 				}
 			}
 			ll sum = 0;
-			vector<vi> ch(n);
-			rep(i,0,n) {
-				if (i == r) assert(par[i] == -1);
+			vector<vector<int>> ch(n);
+			for (int i = 0; i < (n); ++i) {
+				if (i == r) assert(par[i + 1] == -1);
 				else {
-					assert(par[i] != -1);
-					sum += adj[par[i]][i];
-					ch[par[i]].push_back(i);
+					assert(par[i + 1] != -1);
+					int parent = par[i + 1] - 1;
+					sum += adj[parent][i];
+					ch[parent].push_back(i);
 				}
 			}
 			assert(sum == ans1);
-			vi seen(n), q = {r};
-			rep(qi,0,sz(q)) {
+			vector<int> seen(n), q = {r};
+			for (int qi = 0; qi < ((int)(q).size()); ++qi) {
 				int s = q[qi];
 				if (!seen[s]++)
 					for(auto &x: ch[s]) q.push_back(x);
 			}
-			assert(count(all(seen), 0) == 0);
+			assert(count(begin(seen), end(seen), 0) == 0);
 		}
 	}
-	cout<<"Tests passed!"<<endl;
+	cout<<"tests passed!"<<endl;
 	return 0;
 }

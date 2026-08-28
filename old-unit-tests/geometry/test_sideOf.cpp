@@ -1,29 +1,27 @@
 #include "../UnitTest.h"
 #include "../../content/geometry/sideOf.h"
-#include <fstream>
-#include <sstream>
 
-class test_sideOf :
+class TestSideOf :
 	public UnitTest
 {
 public:
-	test_sideOf() : UnitTest("test_sideOf") { }
+	TestSideOf() : UnitTest("TestSideOf") { }
 
-	virtual ~test_sideOf() { }
+	virtual ~TestSideOf() { }
 
 	virtual void run(int subcase) {
 		typedef Point<double> P;
-		check(sideOf(P(0,0),P(1,0),P(1,1)),1);
-		check(sideOf(P(0,0),P(1,0),P(1,0)),0);
-		check(sideOf(P(0,0),P(1,0),P(1,-1)),-1);
-		check(sideOf(P(1,0),P(0,0),P(1,1)),-1);
-		check(sideOf(P(1,0),P(0,0),P(1,0)),0);
-		check(sideOf(P(1,0),P(0,0),P(1,-1)),1);
+		check(side_of(P(0,0),P(1,0),P(1,1)),1);
+		check(side_of(P(0,0),P(1,0),P(1,0)),0);
+		check(side_of(P(0,0),P(1,0),P(1,-1)),-1);
+		check(side_of(P(1,0),P(0,0),P(1,1)),-1);
+		check(side_of(P(1,0),P(0,0),P(1,0)),0);
+		check(side_of(P(1,0),P(0,0),P(1,-1)),1);
 	}
 
-	virtual int getCount() const {
+	virtual int get_count() const {
 		return 1;
 	}
 };
 
-KACTL_AUTOREGISTER_TEST(test_sideOf);
+KACTL_AUTOREGISTER_TEST(TestSideOf);

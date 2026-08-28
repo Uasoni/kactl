@@ -6,19 +6,18 @@
 #include "../../content/data-structures/RMQ.h"
 
 namespace old {
-typedef vector<pii> vpi;
-typedef vector<vpi> graph;
 
-struct LCA {
-	vi time;
+struct LcaReference {
+	vector<int> time;
 	vector<ll> dist;
-	RMQ<pii> rmq;
+	RangeMinimumQuery<pii> range_minimum;
 
-	LCA(graph& C) : time(sz(C), -99), dist(sz(C)), rmq(dfs(C)) {}
+	LcaReference(vector<vector<pii>>& graph) : time((int)graph.size(), -99),
+		dist((int)graph.size()), range_minimum(dfs(graph)) {}
 
-	vpi dfs(graph& C) {
-		vector<tuple<int, int, int, ll>> q(1);
-		vpi ret;
+	vector<pii> dfs(vector<vector<pii>>& C) {
+		vector<tuple<int, int, int, ll>> q = {{1, 0, 0, 0}};
+		vector<pii> ret;
 		int T = 0, v, p, d; ll di;
 		while (!q.empty()) {
 			tie(v, p, d, di) = q.back();
@@ -35,7 +34,7 @@ struct LCA {
 	int query(int a, int b) {
 		if (a == b) return a;
 		a = time[a], b = time[b];
-		return rmq.query(min(a, b), max(a, b)).second;
+		return range_minimum.query(min(a, b) + 1, max(a, b)).second;
 	}
 	ll distance(int a, int b) {
 		int lca = query(a, b);
@@ -45,36 +44,37 @@ struct LCA {
 }
 
 
-void getPars(vector<vi> &tree, int cur, int p, int d, vector<int> &par, vector<int> &depth) {
+void get_pars(vector<vector<int>> &tree, int cur, int p, int d, vector<int> &par, vector<int> &depth) {
 	par[cur] = p;
 	depth[cur] = d;
 	for(auto i: tree[cur]) if (i != p) {
-		getPars(tree, i, cur, d+1, par, depth);
+		get_pars(tree, i, cur, d+1, par, depth);
 	}
 }
 void test_n(int n, int num) {
 	for (int out=0; out<num; out++) {
-		auto graph = genRandomTree(n);
-		vector<vi> tree(n);
-		vector<vector<pair<int, int>>> oldTree(n);
-		for (auto i: graph) {
-			tree[i.first].push_back(i.second);
-			tree[i.second].push_back(i.first);
-			oldTree[i.first].push_back({i.second, 1});
-			oldTree[i.second].push_back({i.first, 1});
+		auto edges = gen_random_tree(n);
+		vector<vector<int>> tree(n + 1);
+		vector<vector<pair<int, int>>> old_tree(n + 1);
+		for (auto i: edges) {
+			int a = i.first + 1, b = i.second + 1;
+			tree[a].push_back(b);
+			tree[b].push_back(a);
+			old_tree[a].push_back({b, 1});
+			old_tree[b].push_back({a, 1});
 		}
-		vector<int> par(n), depth(n);
-		getPars(tree, 0, 0, 0, par, depth);
-		vector<vi> tbl = treeJump(par);
-		LCA new_lca(tree);
-		old::LCA old_lca(oldTree);
+		vector<int> par(n + 1), depth(n + 1);
+		get_pars(tree, 1, 1, 0, par, depth);
+		vector<vector<int>> tbl = tree_jump(par);
+		LcaQuery new_lca(tree);
+		old::LcaReference old_lca(old_tree);
 		for (int i=0; i<100; i++) {
-			int a = rand()%n, b = rand()%n;
-			int binLca = lca(tbl, depth, a, b);
-			int newLca = new_lca.lca(a,b);
-			int oldLca = old_lca.query(a,b);
-			assert(oldLca == newLca);
-			assert(binLca == newLca);
+			int a = rand() % n + 1, b = rand() % n + 1;
+			int bin_lca = lca(tbl, depth, a, b);
+			int new_answer = new_lca.query(a, b);
+			int old_answer = old_lca.query(a, b);
+			assert(old_answer == new_answer);
+			assert(bin_lca == new_answer);
 		}
 	}
 }
@@ -83,6 +83,5 @@ signed main() {
 	test_n(10, 1000);
 	test_n(100, 100);
 	test_n(1000, 10);
-	cout<<"Tests passed!"<<endl;
+	cout<<"tests passed!"<<endl;
 }
-

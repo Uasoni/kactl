@@ -1,22 +1,22 @@
 #pragma once
 #include "random.h"
 
-vector<pii> randomSimpleGraphAsEdgeList(int n, int m) {
+vector<pii> random_simple_graph_as_edge_list(int n, int m) {
 	assert(m <= (ll)n * (n - 1) / 2);
 	vector<pii> ed;
 	if (m > (ll)n * n / 3) {
-		rep(i,0,n) rep(j,0,i) {
+		for (int i = 0; i < (n); ++i) for (int j = 0; j < (i); ++j) {
 			int a = i, b = j;
-			if (randBool()) swap(a, b);
+			if (rand_bool()) swap(a, b);
 			ed.push_back({a,b});
 		}
 		shuffle_vec(ed);
 		ed.erase(ed.begin() + m, ed.end());
 	} else {
 		set<pii> seen;
-		rep(i,0,m) {
-			int a = randRange(n);
-			int b = randRange(n);
+		for (int i = 0; i < (m); ++i) {
+			int a = rand_range(n);
+			int b = rand_range(n);
 			if (a == b) continue;
 			if (!seen.insert(minmax(a, b)).second) continue;
 			ed.push_back({a,b});
@@ -25,9 +25,9 @@ vector<pii> randomSimpleGraphAsEdgeList(int n, int m) {
 	return ed;
 }
 
-vector<vi> randomSimpleGraph(int n, int m) {
-	vector<vi> ed(n);
-	for (auto pa : randomSimpleGraphAsEdgeList(n, m)) {
+vector<vector<int>> random_simple_graph(int n, int m) {
+	vector<vector<int>> ed(n);
+	for (auto pa : random_simple_graph_as_edge_list(n, m)) {
 		ed[pa.first].push_back(pa.second);
 		ed[pa.second].push_back(pa.first);
 	}
@@ -35,19 +35,19 @@ vector<vi> randomSimpleGraph(int n, int m) {
 	return ed;
 }
 
-vector<pii> randomRegularGraphAsEdgeList(int n, int k) {
+vector<pii> random_regular_graph_as_edge_list(int n, int k) {
 	// TODO: this is slow and requires a lot of retries for large n, change to
 	// something smarter.
 	assert(k < n);
 	vector<pii> ed;
-	vi cands(n), rem(n, k);
-	rep(i,0,n) cands[i] = i;
+	vector<int> cands(n), rem(n, k);
+	for (int i = 0; i < (n); ++i) cands[i] = i;
 	int failures = 0;
 	set<pii> seen;
 	while (!cands.empty()) {
-		if (sz(cands) == 1) goto fail;
-		int ai = randRange(sz(cands));
-		int bi = randRange(sz(cands));
+		if ((int)(cands).size() == 1) goto fail;
+		int ai = rand_range((int)(cands).size());
+		int bi = rand_range((int)(cands).size());
 		int a = cands[ai], b = cands[bi];
 		if (a == b) continue;
 		if (!seen.insert(minmax(a, b)).second) {
@@ -67,9 +67,9 @@ vector<pii> randomRegularGraphAsEdgeList(int n, int k) {
 			cands.pop_back();
 		}
 	}
-	assert(sz(ed) == n * k / 2);
+	assert((int)(ed).size() == n * k / 2);
 	return ed;
 fail:
 	cerr << "retry" << endl;
-	return randomRegularGraphAsEdgeList(n, k);
+	return random_regular_graph_as_edge_list(n, k);
 }

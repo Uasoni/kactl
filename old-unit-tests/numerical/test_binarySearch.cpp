@@ -1,19 +1,17 @@
 #include "../UnitTest.h"
 #include "../../content/numerical/binarySearch.h"
-#include <fstream>
-#include <sstream>
 
 double func1(double x) {
 	return (x*x+1)*(x-3);
 }
 
-class test_binarySearch :
+class TestBinarySearch :
 	public UnitTest
 {
 public:
-	test_binarySearch() : UnitTest("test_binarySearch") { }
+	TestBinarySearch() : UnitTest("TestBinarySearch") { }
 
-	virtual ~test_binarySearch() { }
+	virtual ~TestBinarySearch() { }
 
 	virtual void run(int subcase) {
 		double e = 1e-6;
@@ -36,9 +34,9 @@ public:
 		}
 	}
 
-	virtual int getCount() const {
+	virtual int get_count() const {
 		return 4;
 	}
 };
 
-KACTL_AUTOREGISTER_TEST(test_binarySearch);
+KACTL_AUTOREGISTER_TEST(TestBinarySearch);

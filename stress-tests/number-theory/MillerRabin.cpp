@@ -10,7 +10,7 @@ int afactors[] = {2, 3, 5, 13, 19, 73, 193, 407521, 299210837};
 
 const ull MR_LIM = 1ULL << 62;
 
-// Accurate for arbitrary 64-bit numbers
+// accurate for arbitrary 64-bit numbers
 ull int128_mod_mul(ull a, ull b, ull m) { return (ull)((__uint128_t)a * b % m); }
 ull int128_mod_pow(ull b, ull e, ull mod) {
 	ull ans = 1;
@@ -18,12 +18,12 @@ ull int128_mod_pow(ull b, ull e, ull mod) {
 		if (e & 1) ans = int128_mod_mul(ans, b, mod);
 	return ans;
 }
-bool oldIsPrime(ull p) {
+bool old_is_prime(ull p) {
 	if (p == 2) return true;
 	if (p == 1 || p % 2 == 0) return false;
 	ull s = p - 1;
 	while (s % 2 == 0) s /= 2;
-	rep(i,0,15) {
+	for (int i = 0; i < (15); ++i) {
 		ull a = rand() % (p - 1) + 1, tmp = s;
 		ull mod = int128_mod_pow(a, tmp, p);
 		while (tmp != p - 1 && mod != 1 && mod != p - 1) {
@@ -37,8 +37,8 @@ bool oldIsPrime(ull p) {
 
 void rec(ull div, ll num, int ind, int factors) {
 	if (ind == sizeof(afactors)/sizeof(*afactors)) {
-		if (factors == 1) assert(isPrime(div));
-		if (factors > 1) assert(!isPrime(div));
+		if (factors == 1) assert(is_prime(div));
+		if (factors > 1) assert(!is_prime(div));
 		return;
 	}
 	for (;;) {
@@ -49,30 +49,30 @@ void rec(ull div, ll num, int ind, int factors) {
 	}
 }
 
-const int MAXPR = 1e6;
+const int MAX_PR = 1e6;
 int main() {
 	auto prs = sieve::eratosthenes();
-	vector<bool> isprime(MAXPR);
+	vector<bool> isprime(MAX_PR);
 	for (auto i: prs) isprime[i] = true;
 	for(auto &a: A) rec(1, a, 0, 0);
 
-	rep(n,0,MAXPR) {
-		if (isPrime(n) != isprime[n]) {
+	for (int n = 0; n < (MAX_PR); ++n) {
+		if (is_prime(n) != isprime[n]) {
 			cout << "fails for " << n << endl;
 			return 1;
 		}
 	}
 
 	ull n = 1;
-	rep(i,0,1000000) {
+	for (int i = 0; i < (1000000); ++i) {
 		n ^= (ull)rand();
 		n *= 1237618231ULL;
-		if (n < MR_LIM && oldIsPrime(n) != isPrime(n)) {
+		if (n < MR_LIM && old_is_prime(n) != is_prime(n)) {
 			cout << "differs from old for " << n << endl;
-			cout << "old says " << oldIsPrime(n) << endl;
-			cout << "new says " << isPrime(n) << endl;
+			cout << "old says " << old_is_prime(n) << endl;
+			cout << "new says " << is_prime(n) << endl;
 			assert(false);
 		}
 	}
-	cout << "Tests passed!" << endl;
+	cout << "tests passed!" << endl;
 }

@@ -3,7 +3,7 @@
 #include "../../content/graph/SCC.h"
 
 namespace old {
-vi orig, low, comp, z;
+vector<int> orig, low, comp, z;
 int no_vertices, no_components;
 template<class G> void dfs(int j, G &g) {
 	low[j] = orig[j] = no_vertices++;
@@ -25,12 +25,12 @@ template<class G> void dfs(int j, G &g) {
 		no_components++;
 	}
 }
-template<class G> vi scc(G &g) {
-	int n = sz(g);
+template<class G> vector<int> scc(G &g) {
+	int n = (int)(g).size();
 	orig.assign(n, 0); low = orig;
 	no_vertices = no_components = 0;
 	comp.assign(n, -1);
-	rep(i,0,n) if (comp[i] == -1) dfs(i, g);
+	for (int i = 0; i < (n); ++i) if (comp[i] == -1) dfs(i, g);
 	return comp;
 }
 }
@@ -39,26 +39,26 @@ int main() {
 	unsigned r = 1;
 	for (int N = 0; N <= 4; N++) {
 		// cout << "N = " << N << endl;
-		vector<vi> mat(N, vi(N)), adj(N);
-		vi compsize(N), seen(N);
+		vector<vector<int>> mat(N, vector<int>(N)), adj(N);
+		vector<int> compsize(N), seen(N);
 		int count = 0;
-		rep(bits,0,(1 << (N*N))) {
+		for (int bits = 0; bits < ((1 << (N*N))); ++bits) {
 			// if (bits % 10000 == 0) cerr << "." << flush;
-			rep(i,0,N) rep(j,0,N)
+			for (int i = 0; i < (N); ++i) for (int j = 0; j < (N); ++j)
 				mat[i][j] = bits & 1 << (i*N+j);
 
-			rep(i,0,N) {
+			for (int i = 0; i < (N); ++i) {
 				adj[i].clear();
-				rep(j,0,N) if (bits & 1 << (i*N+j)) {
+				for (int j = 0; j < (N); ++j) if (bits & 1 << (i*N+j)) {
 					adj[i].push_back(j);
 					r *= 12387123; r += 1231;
 					if ((r >> 6 & 31) == 3)
 						adj[i].push_back(j);
 				}
 			}
-			vi comp2 = old::scc(adj);
-			scc(adj, [&](vi& v) {
-				compsize[ncomps] = sz(v);
+			vector<int> comp2 = old::scc(adj);
+			scc(adj, [&](vector<int>& v) {
+				compsize[component_count] = (int)(v).size();
 			});
 			if (comp != comp2) {
 				for(auto &x: comp) cout << x << ' ';
@@ -66,14 +66,15 @@ int main() {
 				for(auto &x: comp2) cout << x << ' ';
 				cout << endl;
 			}
-			rep(i,0,N) assert(comp[i] >= 0 && comp[i] < ncomps);
-			rep(i,0,N) for(auto &j: adj[i]) assert(comp[j] <= comp[i]);
-			rep(i,0,N) {
+			for (int i = 0; i < (N); ++i)
+				assert(comp[i] >= 0 && comp[i] < component_count);
+			for (int i = 0; i < (N); ++i) for(auto &j: adj[i]) assert(comp[j] <= comp[i]);
+			for (int i = 0; i < (N); ++i) {
 				seen.assign(N, 0); seen[i] = 1;
-				rep(it,0,N) {
-					rep(j,0,N) if (seen[j]) for(auto &k: adj[j]) seen[k] = 1;
+				for (int it = 0; it < (N); ++it) {
+					for (int j = 0; j < (N); ++j) if (seen[j]) for(auto &k: adj[j]) seen[k] = 1;
 				}
-				rep(j,0,N) {
+				for (int j = 0; j < (N); ++j) {
 					if (seen[j]) assert(comp[j] <= comp[i]);
 					else assert(comp[j] != comp[i]);
 				}
@@ -83,6 +84,6 @@ int main() {
 		}
 		// cout << "tested " << count << endl;
 	}
-	cout<<"Tests passed!"<<endl;
+	cout<<"tests passed!"<<endl;
 	return 0;
 }

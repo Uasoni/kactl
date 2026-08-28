@@ -1,24 +1,25 @@
 /**
- * Author: Simon Lindholm
+ * Author: simon lindholm
  * Date: 2016-03-22
  * License: CC0
- * Source: hacKIT, NWERC 2015
+ * Source: hac_kit, NWERC 2015
  * Description: A set (not multiset!) with support for finding the n'th
- * element, and finding the index of an element.
- * To get a map, change \texttt{null\_type}.
+ *  element and the number of elements smaller than a value. find\_by\_order
+ *  is 0-indexed. Uses GNU policy-based data structures.
  * Time: O(\log N)
  */
 #pragma once
 
-#include <bits/extc++.h> /** keep-include */
-using namespace __gnu_pbds;
+#include <ext/pb_ds/assoc_container.hpp> /** keep-include */
+#include <ext/pb_ds/tree_policy.hpp> /** keep-include */
 
-template<class T>
-using Tree = tree<T, null_type, less<T>, rb_tree_tag,
-    tree_order_statistics_node_update>;
+template<class T, class Compare = less<T>>
+using OrderStatisticTree = __gnu_pbds::tree<T, __gnu_pbds::null_type,
+	Compare, __gnu_pbds::rb_tree_tag,
+	__gnu_pbds::tree_order_statistics_node_update>;
 
 void example() {
-	Tree<int> t, t2; t.insert(8);
+	OrderStatisticTree<int> t, t2; t.insert(8);
 	auto it = t.insert(10).first;
 	assert(it == t.lower_bound(9));
 	assert(t.order_of_key(10) == 1);

@@ -1,48 +1,50 @@
 /**
- * Author: Max Bennedich
+ * Author: max bennedich
  * Date: 2004-02-08
- * Description: Invert matrix $A$. Returns rank; result is stored in $A$ unless singular (rank < n).
- * Can easily be extended to prime moduli; for prime powers, repeatedly
- * set $A^{-1} = A^{-1} (2I - AA^{-1})\  (\text{mod }p^k)$ where $A^{-1}$ starts as
- * the inverse of A mod p, and k is doubled in each step.
+ * Description: invert a 1-indexed matrix. returns rank; result is stored in
+ * $matrix$ unless singular (rank < n). Row and column 0 are ignored.
+ * can easily be extended to prime moduli; for prime powers, repeatedly
+ * set $matrix^{-1} = matrix^{-1} (2I - AA^{-1})\  (\text{mod }p^k)$ where $matrix^{-1}$ starts as
+ * the inverse of matrix mod p, and k is doubled in each step.
  * Time: O(n^3)
- * Status: Slightly tested
+ * Status: slightly tested
  */
 #pragma once
 
-int matInv(vector<vector<double>>& A) {
-	int n = sz(A); vi col(n);
-	vector<vector<double>> tmp(n, vector<double>(n));
-	rep(i,0,n) tmp[i][i] = 1, col[i] = i;
+int mat_inv(vector<vector<double>>& matrix) {
+	int n = (int)matrix.size() - 1; vector<int> col(n + 1);
+	vector<vector<double>> tmp(n + 1, vector<double>(n + 1));
+	for (int i = 1; i <= n; ++i) tmp[i][i] = 1, col[i] = i;
 
-	rep(i,0,n) {
+	for (int i = 1; i <= n; ++i) {
 		int r = i, c = i;
-		rep(j,i,n) rep(k,i,n)
-			if (fabs(A[j][k]) > fabs(A[r][c]))
+		for (int j = i; j <= n; ++j) for (int k = i; k <= n; ++k)
+			if (fabs(matrix[j][k]) > fabs(matrix[r][c]))
 				r = j, c = k;
-		if (fabs(A[r][c]) < 1e-12) return i;
-		A[i].swap(A[r]); tmp[i].swap(tmp[r]);
-		rep(j,0,n)
-			swap(A[j][i], A[j][c]), swap(tmp[j][i], tmp[j][c]);
+		if (fabs(matrix[r][c]) < 1e-12) return i - 1;
+		matrix[i].swap(matrix[r]); tmp[i].swap(tmp[r]);
+		for (int j = 1; j <= n; ++j)
+			swap(matrix[j][i], matrix[j][c]), swap(tmp[j][i], tmp[j][c]);
 		swap(col[i], col[c]);
-		double v = A[i][i];
-		rep(j,i+1,n) {
-			double f = A[j][i] / v;
-			A[j][i] = 0;
-			rep(k,i+1,n) A[j][k] -= f*A[i][k];
-			rep(k,0,n) tmp[j][k] -= f*tmp[i][k];
+		double v = matrix[i][i];
+		for (int j = i+1; j <= n; ++j) {
+			double f = matrix[j][i] / v;
+			matrix[j][i] = 0;
+			for (int k = i+1; k <= n; ++k) matrix[j][k] -= f*matrix[i][k];
+			for (int k = 1; k <= n; ++k) tmp[j][k] -= f*tmp[i][k];
 		}
-		rep(j,i+1,n) A[i][j] /= v;
-		rep(j,0,n) tmp[i][j] /= v;
-		A[i][i] = 1;
+		for (int j = i+1; j <= n; ++j) matrix[i][j] /= v;
+		for (int j = 1; j <= n; ++j) tmp[i][j] /= v;
+		matrix[i][i] = 1;
 	}
 
-	/// forget A at this point, just eliminate tmp backward
-	for (int i = n-1; i > 0; --i) rep(j,0,i) {
-		double v = A[j][i];
-		rep(k,0,n) tmp[j][k] -= v*tmp[i][k];
+	/// forget matrix at this Point, just eliminate tmp backward
+	for (int i = n; i > 1; --i) for (int j = 1; j < i; ++j) {
+		double v = matrix[j][i];
+		for (int k = 1; k <= n; ++k) tmp[j][k] -= v*tmp[i][k];
 	}
 
-	rep(i,0,n) rep(j,0,n) A[col[i]][col[j]] = tmp[i][j];
+	for (int i = 1; i <= n; ++i) for (int j = 1; j <= n; ++j)
+		matrix[col[i]][col[j]] = tmp[i][j];
 	return n;
 }

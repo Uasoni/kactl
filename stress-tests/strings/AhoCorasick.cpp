@@ -1,13 +1,11 @@
 #include "../utilities/template.h"
 #include "../../content/strings/AhoCorasick.h"
 
-#define trav(a, x) for (auto& a : x)
-
 template<class F>
 void gen(string& s, int at, int alpha, F f) {
-	if (at == sz(s)) f();
+	if (at == (int)(s).size()) f();
 	else {
-		rep(i,0,alpha) {
+		for (int i = 0; i < (alpha); ++i) {
 			s[at] = (char)('A' + i);
 			gen(s, at+1, alpha, f);
 		}
@@ -17,7 +15,7 @@ void gen(string& s, int at, int alpha, F f) {
 void test(const string& s) {
 	vector<string> pats;
 	string cur;
-	rep(i,0,sz(s)) {
+	for (int i = 0; i < ((int)(s).size()); ++i) {
 		if (s[i] == 'A') {
 			pats.push_back(cur);
 			cur = "";
@@ -26,32 +24,32 @@ void test(const string& s) {
 	}
 
 	string hay = cur;
-	trav(x, pats) if (x.empty()) return;
+	for (const string& pattern : pats) if (pattern.empty()) return;
 
 	AhoCorasick ac(pats);
-	vector<vi> positions = ac.findAll(pats, hay);
+	vector<vector<int>> positions = ac.find_all(pats, hay);
 
-	vi ord;
-	rep(i,0,sz(hay)) {
+	vector<int> ord;
+	for (int i = 0; i < ((int)(hay).size()); ++i) {
 		ord.clear();
-		rep(j,0,sz(pats)) {
+		for (int j = 0; j < ((int)(pats).size()); ++j) {
 			string& pat = pats[j];
 			if (hay.substr(i, pat.size()) == pat) {
 				ord.push_back(j);
 			}
 		}
-		sort(all(positions[i]));
+		sort(begin(positions[i]), end(positions[i]));
 
 		if (positions[i] != ord) {
 			cerr << "failed!" << endl;
 			cerr << hay << endl;
-			trav(x, pats) cerr << x << endl;
+			for (const string& pattern : pats) cerr << pattern << endl;
 			cerr << "failed at position " << i << endl;
 			cerr << "got:" << endl;
-			trav(x, positions[i]) cerr << x << ' ';
+			for (int position : positions[i]) cerr << position << ' ';
 			cerr << endl;
 			cerr << "expected:" << endl;
-			trav(x, ord) cerr << x << ' ';
+			for (int expected : ord) cerr << expected << ' ';
 			cerr << endl;
 			abort();
 		}
@@ -60,18 +58,18 @@ void test(const string& s) {
 
 int main() {
 	// test ~4^10 strings
-	rep(n,0,11) {
+	for (int n = 0; n < (11); ++n) {
 		string s(n, 'x');
 		gen(s, 0, 4, [&]() {
 			test(s);
 		});
 	}
 	// then ~5^7
-	rep(n,0,8) {
+	for (int n = 0; n < (8); ++n) {
 		string s(n, 'x');
 		gen(s, 0, 5, [&]() {
 			test(s);
 		});
 	}
-	cout<<"Tests passed!"<<endl;
+	cout<<"tests passed!"<<endl;
 }

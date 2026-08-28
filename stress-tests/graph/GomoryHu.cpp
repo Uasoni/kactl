@@ -6,31 +6,31 @@
 #include "../../content/graph/Dinic.h"
 
 
-void test(int N, int mxFlow, int iters) {
-	for (int it = 0; it < iters; it++) {
-		int n = rand()%N+1;
-		int m = rand()%(N*N);
+void test(int max_n, int max_flow, int iterations) {
+	for (int it = 0; it < iterations; it++) {
+		int n = rand() % max_n + 1;
+		int m = rand() % (max_n * max_n);
 		vector<array<ll, 3>> edges;
-		vector<vi> mat(n, vi(n));
-		rep(it,0,m) {
+		vector<vector<int>> mat(n, vector<int>(n));
+		for (int it = 0; it < (m); ++it) {
 			int i = rand() % n;
 			int j = rand() % n;
 			if (i == j) continue;
-			int w = rand() % mxFlow;
-			edges.push_back({i, j, w});
+			int w = rand() % max_flow;
+			edges.push_back({i + 1, j + 1, w});
 			mat[i][j] += w;
 			mat[j][i] += w;
 		}
 		auto calc = [&](int s, int t) {
 			Dinic flow(n);
 			for (auto e : edges) {
-				flow.addEdge((int)e[0], (int)e[1], e[2], e[2]);
+				flow.add_edge((int)e[0], (int)e[1], e[2], e[2]);
 			}
 			return flow.calc(s, t);
 		};
-		vector<Edge> gomoryHuTree = gomoryHu(n, edges);
-		vector<vector<array<int, 2>>> adj(n);
-		for (auto e : gomoryHuTree) {
+		vector<array<ll, 3>> gomory_hu_tree = gomory_hu(n, edges);
+		vector<vector<array<int, 2>>> adj(n + 1);
+		for (auto e : gomory_hu_tree) {
 			adj[e[0]].push_back({(int)e[1], (int)e[2]});
 			adj[e[1]].push_back({(int)e[0], (int)e[2]});
 		}
@@ -43,27 +43,27 @@ void test(int N, int mxFlow, int iters) {
 					dfs(start, i[0], cur, min(mn, i[1]));
 			}
 		});
-		dfs(0, 0, -1, INT_MAX);
+		dfs(1, 1, 0, INT_MAX);
 
-		// Check that the lightest edge agrees with GlobalMinCut.
+		// check that the lightest edge agrees with global_min_cut.
 		if (n >= 2) {
-			ll minCut = LLONG_MAX;
-			for (auto e : gomoryHuTree) {
-				minCut = min(minCut, e[2]);
+			ll min_cut = LLONG_MAX;
+			for (auto e : gomory_hu_tree) {
+				min_cut = min(min_cut, e[2]);
 			}
 			auto mat2 = mat;
-			auto pa = globalMinCut(mat2);
-			assert(pa.first == minCut);
-			vi inCut(n);
-			assert(sz(pa.second) != 0);
-			assert(sz(pa.second) != n);
+			auto pa = global_min_cut(mat2);
+			assert(pa.first == min_cut);
+			vector<int> in_cut(n);
+			assert((int)(pa.second).size() != 0);
+			assert((int)(pa.second).size() != n);
 			for (int x : pa.second) {
 				assert(0 <= x && x < n);
-				assert(!inCut[x]);
-				inCut[x] = 1;
+				assert(!in_cut[x]);
+				in_cut[x] = 1;
 			}
 			int cutw = 0;
-			rep(i,0,n) rep(j,0,n) if (inCut[i] && !inCut[j]) {
+			for (int i = 0; i < (n); ++i) for (int j = 0; j < (n); ++j) if (in_cut[i] && !in_cut[j]) {
 				cutw += mat[i][j];
 			}
 			assert(pa.first == cutw);
@@ -75,5 +75,5 @@ signed main() {
 	test(100, 1000, 5);
 	test(100, 1, 20);
 	test(5, 5, 20000);
-	cout<<"Tests passed!"<<endl;
+	cout<<"tests passed!"<<endl;
 }

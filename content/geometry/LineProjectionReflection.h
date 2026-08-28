@@ -1,12 +1,12 @@
 /**
- * Author: Victor Lecomte, chilli
+ * Author: victor lecomte, chilli
  * Date: 2019-10-29
  * License: CC0
  * Source: https://vlecomte.github.io/cp-geo.pdf
- * Description: Projects point p onto line ab. Set refl=true to get reflection
- * of point p across line ab instead. The wrong point will be returned if P is
- * an integer point and the desired point doesn't have integer coordinates.
- * Products of three coordinates are used in intermediate steps so watch out
+ * Description: projects Point p onto line ab. set refl=true to get reflection
+ * of Point p across line ab instead. the wrong Point will be returned if P is
+ * an integer Point and the desired Point doesn't have integer coordinates.
+ * products of three coordinates are used in intermediate steps so watch out
  * for overflow.
  * Status: stress-tested
  */
@@ -15,7 +15,7 @@
 #include "Point.h"
 
 template<class P>
-P lineProj(P a, P b, P p, bool refl=false) {
+P line_proj(P a, P b, P p, bool refl=false) {
 	P v = b - a;
 	return p - v.perp()*(1+refl)*v.cross(p-a)/v.dist2();
 }

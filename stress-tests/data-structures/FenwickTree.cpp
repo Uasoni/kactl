@@ -3,23 +3,23 @@
 #include "../../content/data-structures/FenwickTree.h"
 
 int main() {
-	rep(it,0,100000) {
-		int N = rand() % 10;
-		FT fw(N);
-		vi t(N);
-		rep(i,0,N) {
+	for (int it = 0; it < (100000); ++it) {
+		int n = rand() % 10;
+		FenwickTree tree(n);
+		vector<int> values(n);
+		for (int i = 1; i <= n; ++i) {
 			int v = rand() % 3;
-			fw.update(i, v);
-			t[i] += v;
+			tree.update(i, v);
+			values[i - 1] += v;
 		}
 		int q = rand() % 20;
-		int ind = fw.lower_bound(q);
-		int res = -1, sum = 0;
-		rep(i,0,N+1) {
-			if (sum < q) res = i;
-			if (i != N) sum += t[i];
+		int actual = tree.lower_bound(q);
+		int expected = q <= 0 ? 0 : n + 1, sum = 0;
+		for (int i = 1; i <= n && expected == n + 1; ++i) {
+			sum += values[i - 1];
+			if (sum >= q) expected = i;
 		}
-		assert(res == ind);
+		assert(actual == expected);
 	}
-	cout<<"Tests passed!"<<endl;
+	cout<<"tests passed!"<<endl;
 }

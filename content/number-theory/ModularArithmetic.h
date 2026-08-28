@@ -1,30 +1,30 @@
 /**
- * Author: Lukas Polacek
+ * Author: lukas polacek
  * Date: 2009-09-28
  * License: CC0
  * Source: folklore
- * Description: Operators for modular arithmetic. You need to set {\tt mod} to
+ * Description: operators for modular arithmetic. you need to set {\tt ModInt} to
  * some number first and then you can use the structure.
  */
 #pragma once
 
 #include "euclid.h"
 
-const ll mod = 17; // change to something else
-struct Mod {
+const ll MOD = 17; // change to something else
+struct ModInt {
 	ll x;
-	Mod(ll xx) : x(xx) {}
-	Mod operator+(Mod b) { return Mod((x + b.x) % mod); }
-	Mod operator-(Mod b) { return Mod((x - b.x + mod) % mod); }
-	Mod operator*(Mod b) { return Mod((x * b.x) % mod); }
-	Mod operator/(Mod b) { return *this * invert(b); }
-	Mod invert(Mod a) {
-		ll x, y, g = euclid(a.x, mod, x, y);
-		assert(g == 1); return Mod((x + mod) % mod);
+	ModInt(ll xx) : x(xx) {}
+	ModInt operator+(ModInt b) { return ModInt((x + b.x) % MOD); }
+	ModInt operator-(ModInt b) { return ModInt((x - b.x + MOD) % MOD); }
+	ModInt operator*(ModInt b) { return ModInt((x * b.x) % MOD); }
+	ModInt operator/(ModInt b) { return *this * invert(b); }
+	ModInt invert(ModInt a) {
+		ll x, y, g = euclid(a.x, MOD, x, y);
+		assert(g == 1); return ModInt((x + MOD) % MOD);
 	}
-	Mod operator^(ll e) {
-		if (!e) return Mod(1);
-		Mod r = *this ^ (e / 2); r = r * r;
+	ModInt operator^(ll e) {
+		if (!e) return ModInt(1);
+		ModInt r = *this ^ (e / 2); r = r * r;
 		return e&1 ? *this * r : r;
 	}
 };

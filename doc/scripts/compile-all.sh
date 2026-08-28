@@ -1,38 +1,49 @@
 #!/usr/bin/env bash
-DIR=${1:-.}
+set -u
 
-# use a precompiled header for the template to improve perf
-g++ -Wall -Wextra -Wfatal-errors -Wconversion -std=c++17 -x c++-header $DIR/content/contest/template.cpp
-trap "rm -f $DIR/content/contest/template.cpp.gch" EXIT
+directory=${1:-.}
+script_directory="$directory/doc/scripts"
+compiler_flags=(-Wall -Wextra -Wfatal-errors -Wconversion -std=c++20)
 
-SCRIPT_DIR=$DIR/doc/scripts
-tests="$(find $DIR/content -name '*.h' | grep -vFf $SCRIPT_DIR/skip_headers)"
-echo "skipped: "
-find $DIR/content -name '*.h' | grep -Ff $SCRIPT_DIR/skip_headers
-declare -i pass=0
-declare -i fail=0
-failHeaders=""
-for test in $tests; do
-    echo "$(basename $test): "
-    $SCRIPT_DIR/test-compiles.sh $test
-    retCode=$?
-    if (($retCode != 0)); then
-        echo $retCode
-        fail+=1
-        failHeaders="$failHeaders$test\n"
-    else
-        pass+=1
-    fi
-    echo
+g++ "${compiler_flags[@]}" -x c++-header "$directory/content/contest/template.cpp"
+trap 'rm -f "$directory/content/contest/template.cpp.gch"' EXIT
+
+mapfile -t headers < <(find "$directory/content" -name '*.h' | sort)
+tests=()
+skipped=()
+for header in "${headers[@]}"; do
+	if grep -qFf "$script_directory/skip_headers" <<< "$header"; then
+		skipped+=("$header")
+	else
+		tests+=("$header")
+	fi
 done
-echo "$pass/$(($pass+$fail)) tests passed"
-if (($pass == 0)); then
-    echo "No tests found (make sure skip_headers doesn't have whitespace lines)"
-    exit 1
-elif (($fail == 0)); then
-    echo "No tests failed"
-    exit 0
-else
-    echo -e "These tests failed: \n $failHeaders"
-    exit 1
+
+printf 'skipped:\n'
+printf ' %s\n' "${skipped[@]}"
+
+pass=0
+failed_headers=()
+for test in "${tests[@]}"; do
+	printf '%s: ' "$(basename "$test")"
+	if "$script_directory/test-compiles.sh" "$test" "$directory"; then
+		printf 'passed\n'
+		((pass += 1))
+	else
+		printf 'failed\n'
+		failed_headers+=("$test")
+	fi
+done
+
+total=${#tests[@]}
+printf '%d/%d tests passed\n' "$pass" "$total"
+if ((total == 0)); then
+	printf 'No tests found; check skip_headers for blank lines.\n'
+	exit 1
 fi
+if ((${#failed_headers[@]})); then
+	printf 'These tests failed:\n'
+	printf ' %s\n' "${failed_headers[@]}"
+	exit 1
+fi
+printf 'No tests failed\n'

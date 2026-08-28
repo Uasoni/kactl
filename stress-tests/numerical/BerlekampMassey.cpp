@@ -1,25 +1,14 @@
 #include "../utilities/template.h"
 
-const ll mod = 5;
-ll modpow(ll a, ll e) {
-	if (e == 0) return 1;
-	ll x = modpow(a * a % mod, e >> 1);
-	return e & 1 ? x * a % mod : x;
-}
-
-#define mod dummy
-#define modpow dummy2
-#include "../../content/number-theory/ModPow.h"
-#undef mod
-#undef modpow
+const ll MOD = 5;
 
 #include "../../content/numerical/BerlekampMassey.h"
 
 template<class F>
 void gen(vector<ll>& v, int at, F f) {
-	if (at == sz(v)) f();
+	if (at == (int)(v).size()) f();
 	else {
-		rep(i,0,mod) {
+		for (int i = 0; i < MOD; ++i) {
 			v[at] = i;
 			gen(v, at+1, f);
 		}
@@ -27,24 +16,26 @@ void gen(vector<ll>& v, int at, F f) {
 }
 
 int main() {
-	rep(n,1,5) {
+	for (int n = 1; n < (5); ++n) {
 		vector<ll> start(n);
 		vector<ll> coef(n), coef2;
 		vector<ll> full(2*n);
 		gen(start, 0, [&]() {
 		gen(coef, 0, [&]() {
-			rep(i,0,n) full[i] = start[i];
-			rep(i,n,2*n) full[i] = 0;
-			rep(i,n,2*n) rep(j,0,n) full[i] = (full[i] + coef[j] * full[i-1 - j]) % mod;
-			coef2 = berlekampMassey(full);
-// rep(i,0,2*n) cerr << full[i] << ' '; cerr << endl;
-// rep(i,0,n) cerr << coef[i] << ' '; cerr << endl;
-// rep(i,0,sz(coef2)) cerr << coef2[i] << ' '; cerr << endl;
-			if (sz(coef2) == n) assert(coef == coef2);
-// rep(i,0,n) cerr << full[i] << ' ';
-			rep(i,n,2*n) {
+			for (int i = 0; i < (n); ++i) full[i] = start[i];
+			for (int i = n; i < (2*n); ++i) full[i] = 0;
+			for (int i = n; i < 2*n; ++i) for (int j = 0; j < n; ++j)
+				full[i] = (full[i] + coef[j] * full[i-1 - j]) % MOD;
+			coef2 = berlekamp_massey(full, MOD);
+// for (int i = 0; i < (2*n); ++i) cerr << full[i] << ' '; cerr << endl;
+// for (int i = 0; i < (n); ++i) cerr << coef[i] << ' '; cerr << endl;
+// for (int i = 0; i < ((int)(coef2).size()); ++i) cerr << coef2[i] << ' '; cerr << endl;
+			if ((int)(coef2).size() == n) assert(coef == coef2);
+// for (int i = 0; i < (n); ++i) cerr << full[i] << ' ';
+			for (int i = n; i < (2*n); ++i) {
 				ll x = 0;
-				rep(j,0,sz(coef2)) x = (x + coef2[j] * full[i-1 - j]) % mod;
+				for (int j = 0; j < (int)coef2.size(); ++j)
+					x = (x + coef2[j] * full[i-1 - j]) % MOD;
 				// cerr << x << ' ';
 				assert(x == full[i]);
 			}
@@ -53,13 +44,13 @@ int main() {
 		});
 		});
 	}
-	cout<<"Tests passed!"<<endl;
+	cout<<"tests passed!"<<endl;
 	return 0;
 }
 
 int main2() {
 	vector<ll> v{0, 1, 1, 3, 5, 11};
-	auto v2 = berlekampMassey(v);
+	auto v2 = berlekamp_massey(v, MOD);
 	for(auto &x: v2) cout << x << ' ';
 	cout << endl;
 	return 0;

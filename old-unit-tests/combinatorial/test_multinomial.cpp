@@ -1,13 +1,13 @@
 #include "../UnitTest.h"
 #include "../../content/combinatorial/multinomial.h"
 
-class test_multinomial :
+class TestMultinomial :
 	public UnitTest
 {
 	public:
 		vector<vector<int> > cases;
 
-		test_multinomial() : UnitTest("test_multinomial") {
+		TestMultinomial() : UnitTest("TestMultinomial") {
 			vector<int> a(2, 2);
 			cases.push_back(a);
 			a.clear();
@@ -15,7 +15,7 @@ class test_multinomial :
 			cases.push_back(a);
 		}
 
-		virtual ~test_multinomial() {
+		virtual ~TestMultinomial() {
 		}
 
 		virtual void run(int i) {
@@ -26,9 +26,9 @@ class test_multinomial :
 				check(res, 27720, "0");
 		}
 
-		virtual int getCount() const {
+		virtual int get_count() const {
 			return cases.size();
 		}
 };
 
-KACTL_AUTOREGISTER_TEST(test_multinomial);
+KACTL_AUTOREGISTER_TEST(TestMultinomial);

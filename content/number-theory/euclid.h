@@ -1,10 +1,10 @@
 /**
- * Author: Unknown
+ * Author: unknown
  * Date: 2002-09-15
- * Source: predates tinyKACTL
- * Description: Finds two integers $x$ and $y$, such that $ax+by=\gcd(a,b)$. If
+ * Source: predates tiny_kactl
+ * Description: finds two integers $x$ and $y$, such that $ax+by=\gcd(a,b)$. if
  * you just need gcd, use the built in \texttt{\_\_gcd} instead.
- * If $a$ and $b$ are coprime, then $x$ is the inverse of $a \pmod{b}$.
+ * if $a$ and $b$ are coprime, then $x$ is the inverse of $a \pmod{b}$.
  */
 #pragma once
 

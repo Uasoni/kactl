@@ -2,39 +2,39 @@
 
 #include "../../content/strings/Hashing.h"
 
-#include <sys/time.h>
 int main() {
-	assert((H(1)*2+1-3).get() == 0);
+	assert((HashValue(1) * 2 + 1 - 3).get() == 0);
 
-	rep(it,0,10000) {
+	for (int it = 0; it < (10000); ++it) {
 		int n = rand() % 10;
 		int alpha = rand() % 10 + 1;
 		string s;
-		rep(i,0,n) s += (char)('a' + rand() % alpha);
-		HashInterval hi(s);
+		for (int i = 0; i < (n); ++i) s += (char)('a' + rand() % alpha);
+		RollingHash hashes_by_range(s);
 		set<string> strs;
 		set<ull> hashes;
 
-		// HashInterval
-		rep(i,0,n+1) rep(j,i,n+1) {
-			string sub = s.substr(i, j - i);
-			ull hash = hashString(sub).get();
-			assert(hi.hashInterval(i, j).get() == hash);
+		for (int left = 1; left <= n; ++left)
+			for (int right = left; right <= n; ++right) {
+			string sub = s.substr(left - 1, right - left + 1);
+			ull hash = hash_string(sub).get();
+			assert(hashes_by_range.query(left, right).get() == hash);
 			hashes.insert(hash);
 			strs.insert(sub);
 		}
 
-		// getHashes
-		rep(le,1,n+1) {
-			auto ve = getHashes(s, le);
-			assert(sz(ve) == n-le+1);
-			rep(i,0,n-le+1) {
-				assert(ve[i].get() == hi.hashInterval(i, i + le).get());
+		// get_hashes
+		for (int le = 1; le < (n+1); ++le) {
+			auto values = get_hashes(s, le);
+			assert((int)values.size() == n - le + 1);
+			for (int i = 0; i < n - le + 1; ++i) {
+				assert(values[i].get()
+					== hashes_by_range.query(i + 1, i + le).get());
 			}
 		}
 
-		// No collisions
-		assert(sz(strs) == sz(hashes));
+		// no collisions
+		assert((int)(strs).size() == (int)(hashes).size());
 	}
-	cout<<"Tests passed!"<<endl;
+	cout<<"tests passed!"<<endl;
 }

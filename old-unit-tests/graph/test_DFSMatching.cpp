@@ -1,20 +1,19 @@
 #include "../UnitTest.h"
 #include "../../content/graph/dfs_matching.h"
-#include <fstream>
 
-class test_DFSMatching :
+class TestDfsMatching :
 	public UnitTest
 {
 	public:
 		ifstream in;
 		int cases;
 
-		test_DFSMatching() : UnitTest("test_DFSMatching") {
-			in.open("Matching.in");
+		TestDfsMatching() : UnitTest("TestDfsMatching") {
+			in.open("matching.in");
 			in >> cases;
 		}
 
-		virtual ~test_DFSMatching() {
+		virtual ~TestDfsMatching() {
 			in.close();
 		}
 
@@ -35,9 +34,9 @@ class test_DFSMatching :
 			if (subcase == 4) check(res, 47, "DFS 4");
 		}
 
-		virtual int getCount() const {
+		virtual int get_count() const {
 			return cases;
 		}
 };
 
-KACTL_AUTOREGISTER_TEST(test_DFSMatching);
+KACTL_AUTOREGISTER_TEST(TestDfsMatching);

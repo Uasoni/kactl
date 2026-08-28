@@ -5,20 +5,22 @@
 #include "../../content/geometry/ConvexHull.h"
 #include "../../content/geometry/PolygonArea.h"
 
-#define P P2
 #include "../../content/geometry/circumcircle.h"
-#undef P
+typedef Point<ll> integer_point;
+typedef Point<double> floating_point_type;
 
-P2 top(P x) { return P2((double)x.x, (double)x.y); }
+floating_point_type top(integer_point x) {
+	return floating_point_type((double)x.x, (double)x.y);
+}
 
-struct Bumpalloc {
+struct BumpAllocator {
 	char buf[450 << 20];
 	size_t bufp;
 	void* alloc(size_t s) {
 		assert(s < bufp);
 		return (void*)&buf[bufp -= s];
 	}
-	Bumpalloc() { reset(); }
+	BumpAllocator() { reset(); }
 
 	template<class T> T* operator=(T&& x) {
 		T* r = (T*)alloc(sizeof(T));
@@ -26,11 +28,11 @@ struct Bumpalloc {
 		return r;
 	}
 	void reset() { bufp = sizeof buf; }
-} bumpalloc;
+} BumpAllocator;
 
-// When not testing perf, we don't want to leak memory
+// when not testing perf, we don't want to leak memory
 #ifndef TEST_PERF
-#define new bumpalloc =
+#define new BumpAllocator =
 #endif
 #include "../../content/geometry/FastDelaunay.h"
 #ifndef TEST_PERF
@@ -40,10 +42,10 @@ struct Bumpalloc {
 template<class A, class F>
 void dela(A& v, F f) {
 	auto ret = triangulate(v);
-	assert(sz(ret) % 3 == 0);
-	map<P, int> lut;
-	rep(i,0,sz(v)) lut[v[i]] = i;
-	for (int a = 0; a < sz(ret); a += 3) {
+	assert((int)(ret).size() % 3 == 0);
+	map<integer_point, int> lut;
+	for (int i = 0; i < ((int)(v).size()); ++i) lut[v[i]] = i;
+	for (int a = 0; a < (int)(ret).size(); a += 3) {
 		f(lut[ret[a]], lut[ret[a+1]], lut[ret[a+2]]);
 	}
 }
@@ -51,14 +53,14 @@ void dela(A& v, F f) {
 int main1() {
 	srand(2);
 	feenableexcept(29);
-	rep(it,0,3000000) {{
-		bumpalloc.reset();
+	for (int it = 0; it < (3000000); ++it) {{
+		BumpAllocator.reset();
 		// if (it % 200 == 0) cerr << endl;
-		vector<P> ps;
-		int N = rand() % 20 + 1;
+		vector<integer_point> ps;
+		int n = rand() % 20 + 1;
 		int xrange = rand() % 50 + 1;
 		int yrange = rand() % 50 + 1;
-		rep(i,0,N) {
+		for (int i = 0; i < (n); ++i) {
 			ps.emplace_back(rand() % (2*xrange) - xrange, rand() % (2*yrange) - yrange);
 		}
 
@@ -73,31 +75,31 @@ int main1() {
 			return abs(q) < 1e-4;
 		};
 
-		rep(i,0,N) rep(j,0,i) {
+		for (int i = 0; i < (n); ++i) for (int j = 0; j < (i); ++j) {
 			// identical
 			if (ps[i] == ps[j]) {  goto fail; }
 		}
-		if (false) rep(i,0,N) rep(j,0,i) rep(k,0,j) {
+		if (false) for (int i = 0; i < (n); ++i) for (int j = 0; j < (i); ++j) for (int k = 0; k < (j); ++k) {
 			// colinear
 			if (ps[i].cross(ps[j], ps[k]) == 0) {  goto fail; }
 		}
-		if (false) rep(i,0,N) rep(j,0,i) rep(k,0,j) rep(l,0,k) {
+		if (false) for (int i = 0; i < (n); ++i) for (int j = 0; j < (i); ++j) for (int k = 0; k < (j); ++k) for (int l = 0; l < (k); ++l) {
 			// concyclic
 			if (coc(i,j,k,l) || coc(i,j,l,k) || coc(i,l,j,k) || coc(i,l,k,j)) {  goto fail; }
 		}
 
-		bool allColinear = true;
-		if (N >= 3) {
-			rep(i,2,N) if ((ps[i] - ps[0]).cross(ps[1] - ps[0])) allColinear = false;
+		bool all_colinear = true;
+		if (n >= 3) {
+			for (int i = 2; i < (n); ++i) if ((ps[i] - ps[0]).cross(ps[1] - ps[0])) all_colinear = false;
 		}
 
 		auto fail = [&]() {
-			cout << "Points:" << endl;
+			cout << "points:" << endl;
 			for(auto &p: ps) {
 				cout << p.x << ' ' << p.y << endl;
 			}
 
-			cout << "Triangles:" << endl;
+			cout << "triangles:" << endl;
 			dela(ps, [&](int i, int j, int k) {
 				cout << i << ' ' << j << ' ' << k << endl;
 			});
@@ -106,7 +108,7 @@ int main1() {
 		};
 
 		ll sumar = 0;
-		vi used(N);
+		vector<int> used(n);
 		bool any = false;
 		dela(ps, [&](int i, int j, int k) {
 			any = true;
@@ -114,42 +116,42 @@ int main1() {
 			ll ar = ps[i].cross(ps[j], ps[k]);
 			if (ar <= 0) fail();
 			sumar += ar;
-			P2 c = ccCenter(top(ps[i]), top(ps[j]), top(ps[k]));
-			double ra = ccRadius(top(ps[i]), top(ps[j]), top(ps[k]));
-			rep(l,0,N) {
+			floating_point_type c = cc_center(top(ps[i]), top(ps[j]), top(ps[k]));
+			double ra = cc_radius(top(ps[i]), top(ps[j]), top(ps[k]));
+			for (int l = 0; l < (n); ++l) {
 				if ((top(ps[l]) - c).dist() < ra - 1e-5) fail();
 			}
 		});
-		if (!allColinear) {
-			rep(i,0,N) if (!used[i]) fail();
+		if (!all_colinear) {
+			for (int i = 0; i < (n); ++i) if (!used[i]) fail();
 		} else {
 			assert(!any);
 		}
 
-		vector<P> hull = convexHull(ps);
-		ll ar2 = polygonArea2(hull);
+		vector<integer_point> hull = convex_hull(ps);
+		ll ar2 = polygon_area2(hull);
 		if (ar2 != sumar) fail();
 
 		continue; }
 fail:;
 	}
-	cout<<"Tests passed!"<<endl;
+	cout<<"tests passed!"<<endl;
 	// cerr << endl;
 	return 0;
 }
 
 int main2() {
-	vector<P> ps;
-	int N = 100000;
+	vector<integer_point> ps;
+	int n = 100000;
 	int xrange = 20000;
 	int yrange = 20000;
-	rep(i,0,N) {
+	for (int i = 0; i < (n); ++i) {
 		ps.emplace_back(rand() % (2*xrange) - xrange, rand() % (2*yrange) - yrange);
 	}
-	sort(all(ps));
-	ps.erase(unique(all(ps)), ps.end());
+	sort(begin(ps), end(ps));
+	ps.erase(unique(begin(ps), end(ps)), ps.end());
 
-	cout << sz(ps) << endl;
+	cout << (int)(ps).size() << endl;
 	triangulate(ps);
 	return 0;
 }

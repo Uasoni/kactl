@@ -1,38 +1,40 @@
 #include "../utilities/template.h"
 
-// #include "../../content/data-structures/MoQueries.h"
+// #include "../../content/data-structures/mo_queries.h"
 
-int curL = 0, curR = 0, ops = 0;
+int cur_l = 0, cur_r = 0, ops = 0;
 void add(int ind, int end) {
-	if (curL != curR) {
-		if (end == 0) assert(ind == curL - 1);
-		else assert(ind == curR);
+	if (cur_l != cur_r) {
+		if (end == 0) assert(ind == cur_l - 1);
+		else assert(ind == cur_r);
 	}
-	if (curL == curR) curL = ind, curR = ind + 1;
-	else if (ind == curR) curR++;
-	else curL--;
+	if (cur_l == cur_r) cur_l = ind, cur_r = ind + 1;
+	else if (ind == cur_r) cur_r++;
+	else cur_l--;
 	ops++;
 }
 void del(int ind, int end) {
-	if (end == 0) assert(ind == curL);
-	else assert(ind == curR - 1);
-	if (ind == curR - 1) curR--;
-	else curL++;
-	assert(curL <= curR);
+	if (end == 0) assert(ind == cur_l);
+	else assert(ind == cur_r - 1);
+	if (ind == cur_r - 1) cur_r--;
+	else cur_l++;
+	assert(cur_l <= cur_r);
 	ops++;
 }
 
 int calc() {
-	return curL == curR ? -1 : curL + (curR - curL) * 10;
+	return cur_l == cur_r ? -1 : cur_l + (cur_r - cur_l) * 10;
 }
 
 int blk; // ~N/sqrt(Q)
-vi mo(vector<pii> Q) {
+vector<int> mo(vector<pii> Q) {
 	int L = 0, R = 0;
-	vi s(sz(Q)), res = s;
-#define K(x) pii(x.first/blk, x.second ^ -(x.first/blk & 1))
-	iota(all(s), 0);
-	sort(all(s), [&](int s, int t){ return K(Q[s]) < K(Q[t]); });
+	vector<int> s((int)(Q).size()), res = s;
+	auto order_key = [&](pii query) {
+		return pii(query.first / blk, query.second ^ -(query.first / blk & 1));
+	};
+	iota(begin(s), end(s), 0);
+	sort(begin(s), end(s), [&](int s, int t) { return order_key(Q[s]) < order_key(Q[t]); });
 	for (int qi : s) {
 		pii q = Q[qi];
 		while (L > q.first) add(--L, 0);
@@ -45,7 +47,7 @@ vi mo(vector<pii> Q) {
 }
 
 void test(int n, int q) {
-	curL = curR = ops = 0;
+	cur_l = cur_r = ops = 0;
 	blk = max((int)(n / sqrt(max(q, 1))), 1);
 	vector<pii> queries(q);
 	for (auto& pa : queries) {
@@ -54,8 +56,8 @@ void test(int n, int q) {
 		if (pa.first > pa.second)
 			swap(pa.first, pa.second);
 	}
-	vi res = mo(queries);
-	rep(i,0,q) {
+	vector<int> res = mo(queries);
+	for (int i = 0; i < (q); ++i) {
 		int l = queries[i].first, r = queries[i].second;
 		if (l == r) {
 			assert(res[i] == -1);
@@ -63,18 +65,16 @@ void test(int n, int q) {
 			assert(res[i] == l + (r - l) * 10);
 		}
 	}
-	// (This inequality holds for random queries; in general it's off by a small constant)
+	// (this inequality holds for random queries; in general it's off by a small constant)
 	if (n > 100 && q > 100) {
 		// cout << n << ' ' << q << ' ' << ops / (n * sqrt(q)) << endl;
 		assert(ops < n * sqrt(q));
 	}
 }
 
-#undef K
+namespace mo_tree {
 
-namespace MoTree {
-
-vi vals;
+vector<int> vals;
 int sum;
 deque<int> path;
 void add(int i, int end) {
@@ -97,9 +97,9 @@ void del(int i, int end) {
 }
 int calc() { return sum; }
 
-vi moTree(vector<array<int, 2>> Q, vector<vi>& ed, int root=0){
-	int N = sz(ed), pos[2] = {};
-	vi s(sz(Q)), res = s, I(N), L(N), R(N), in(N), par(N);
+vector<int> mo_tree(vector<array<int, 2>> Q, vector<vector<int>>& ed, int root=0){
+	int N = (int)(ed).size(), pos[2] = {};
+	vector<int> s((int)(Q).size()), res = s, I(N), L(N), R(N), in(N), par(N);
 	add(0, 0), in[0] = 1;
 	auto dfs = [&](int x, int p, int dep, auto& f) -> void {
 		par[x] = p;
@@ -110,13 +110,19 @@ vi moTree(vector<array<int, 2>> Q, vector<vi>& ed, int root=0){
 		R[x] = N;
 	};
 	dfs(root, -1, 0, dfs);
-#define K(x) pii(I[x[0]] / blk, I[x[1]] ^ -(I[x[0]] / blk & 1))
-	iota(all(s), 0);
-	sort(all(s), [&](int s, int t){ return K(Q[s]) < K(Q[t]); });
-	for (int qi : s) rep(end,0,2) {
+	auto order_key = [&](const array<int, 2>& query) {
+		return pii(I[query[0]] / blk,
+			I[query[1]] ^ -(I[query[0]] / blk & 1));
+	};
+	iota(begin(s), end(s), 0);
+	sort(begin(s), end(s), [&](int s, int t) { return order_key(Q[s]) < order_key(Q[t]); });
+	for (int qi : s) for (int end = 0; end < (2); ++end) {
 		int &a = pos[end], b = Q[qi][end], i = 0;
-#define step(c) { if (in[c]) del(a, end), in[a] = 0; \
-                  else add(c, end), in[c] = 1; a = c; }
+		auto step = [&](int next) {
+			if (in[next]) del(a, end), in[a] = 0;
+			else add(next, end), in[next] = 1;
+			a = next;
+		};
 		while (!(L[b] <= L[a] && R[a] <= R[b]))
 			I[i++] = b, b = par[b];
 		while (a != b) step(par[a]);
@@ -128,7 +134,7 @@ vi moTree(vector<array<int, 2>> Q, vector<vi>& ed, int root=0){
 
 }
 
-void testTr(int n, int q) {
+void test_tr(int n, int q) {
 	ops = 0;
 	blk = max((int)(n / sqrt(max(q, 1))), 1);
 	vector<array<int, 2>> queries(q);
@@ -136,18 +142,18 @@ void testTr(int n, int q) {
 		pa[0] = rand() % n;
 		pa[1] = rand() % n;
 	}
-	vi par(n), val(n);
-	rep(i,1,n) par[i] = rand() % i;
-	rep(i,0,n) val[i] = rand() % 1000;
-	vector<vi> ed(n);
-	rep(i,1,n) ed[par[i]].push_back(i), ed[i].push_back(par[i]);
-	MoTree::vals = val;
-	MoTree::sum = 0;
-	MoTree::path.clear();
-	vi res = MoTree::moTree(queries, ed);
-	vi seen(n);
-	rep(i,0,q) {
-		// Tree depth is logarithmic, so compute query answers naively
+	vector<int> par(n), val(n);
+	for (int i = 1; i < (n); ++i) par[i] = rand() % i;
+	for (int i = 0; i < (n); ++i) val[i] = rand() % 1000;
+	vector<vector<int>> ed(n);
+	for (int i = 1; i < (n); ++i) ed[par[i]].push_back(i), ed[i].push_back(par[i]);
+	mo_tree::vals = val;
+	mo_tree::sum = 0;
+	mo_tree::path.clear();
+	vector<int> res = mo_tree::mo_tree(queries, ed);
+	vector<int> seen(n);
+	for (int i = 0; i < (q); ++i) {
+		// tree depth is logarithmic, so compute query answers naively
 		int l = queries[i][0], r = queries[i][1];
 		int at = l;
 		while (at != 0) seen[at] = 1, at = par[at];
@@ -165,17 +171,17 @@ void testTr(int n, int q) {
 
 int main() {
 	srand(2);
-	rep(it,0,10) rep(n,1,15) rep(q,0,n*n) {
-		testTr(n, q);
+	for (int it = 0; it < (10); ++it) for (int n = 1; n < (15); ++n) for (int q = 0; q < (n*n); ++q) {
+		test_tr(n, q);
 	}
-	testTr(100'000, 100'000);
-	testTr(1000, 100'000);
-	testTr(100'000, 1000);
+	test_tr(100'000, 100'000);
+	test_tr(1000, 100'000);
+	test_tr(100'000, 1000);
 	test(100'000, 100'000);
 	test(1000, 100'000);
 	test(100'000, 1000);
-	rep(it,0,10) rep(n,1,15) rep(q,0,n*n) {
+	for (int it = 0; it < (10); ++it) for (int n = 1; n < (15); ++n) for (int q = 0; q < (n*n); ++q) {
 		test(n, q);
 	}
-	cout << "Tests passed!" << endl;
+	cout << "tests passed!" << endl;
 }

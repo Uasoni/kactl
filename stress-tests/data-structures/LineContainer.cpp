@@ -4,19 +4,19 @@
 
 namespace other {
 // source: https://github.com/niklasb/contest-algos/blob/master/convex_hull/dynamic.cpp
-const ll is_query = -(1LL<<62);
-struct Line {
+const ll IS_QUERY = -(1LL<<62);
+struct ReferenceLine {
 	ll m, b;
-	mutable function<const Line*()> succ;
-	bool operator<(const Line& rhs) const {
-		if (rhs.b != is_query) return m < rhs.m;
-		const Line* s = succ();
+	mutable function<const ReferenceLine*()> succ;
+	bool operator<(const ReferenceLine& rhs) const {
+		if (rhs.b != IS_QUERY) return m < rhs.m;
+		const ReferenceLine* s = succ();
 		if (!s) return 0;
 		ll x = rhs.m;
 		return b - s->b < (s->m - m) * x;
 	}
 };
-struct HullDynamic : public multiset<Line> { // will maintain upper hull for maximum
+struct DynamicHull : public multiset<ReferenceLine> { // will maintain upper hull for maximum
 	bool bad(iterator y) {
 		auto z = next(y);
 		if (y == begin()) {
@@ -35,7 +35,7 @@ struct HullDynamic : public multiset<Line> { // will maintain upper hull for max
 		while (y != begin() && bad(prev(y))) erase(prev(y));
 	}
 	ll query(ll x) {
-		auto l = *lower_bound((Line) { x, is_query });
+		auto l = *lower_bound((ReferenceLine) { x, IS_QUERY });
 		return l.m * x + l.b;
 	}
 };
@@ -45,22 +45,22 @@ int test2() {
 	LineContainer mh;
 	const int K = 10;
 	ll x[K], v[K];
-	rep(it,0,100) {
+	for (int it = 0; it < (100); ++it) {
 		mh.clear();
-		int N = rand() % 100000 + 1;
-		rep(j,0,K) x[j] = rand() % 1000 - 500, v[j] = LLONG_MIN;
+		int n = rand() % 100000 + 1;
+		for (int j = 0; j < (K); ++j) x[j] = rand() % 1000 - 500, v[j] = LLONG_MIN;
 // cerr << "---" << endl;
 // cerr << x << endl;
-		rep(i,0,N) {
+		for (int i = 0; i < (n); ++i) {
 			ll k = rand() % 100000 - 50000;
 			ll m = rand() % (1LL << 30) - (1LL << 29);
 // cerr << k << ' ' << m << endl;
 			mh.add((int)k, (int)m);
-			rep(j,0,K) v[j] = max(v[j], k*x[j] + m);
+			for (int j = 0; j < (K); ++j) v[j] = max(v[j], k*x[j] + m);
 		}
 // cerr << mh.eval(x) << ' ' << v << endl;
 // for(auto &li: mh) cerr << li.k << ' ' << li.m << ' ' << li.p << endl;
-		rep(j,0,K)
+		for (int j = 0; j < (K); ++j)
 			assert(mh.query(x[j]) == v[j]);
 	}
 	return 0;
@@ -76,8 +76,8 @@ int ra() {
 
 int main() {
 	LineContainer mh;
-	other::HullDynamic mh2;
-	rep(it,0,10000000) {
+	other::DynamicHull mh2;
+	for (int it = 0; it < (10000000); ++it) {
 		assert(mh.empty() == mh2.empty());
 		int r = ra() % 100;
 		if (r < 10) mh.clear(), mh2.clear();
@@ -93,5 +93,5 @@ int main() {
 		}
 	}
 	test2();
-	cout<<"Tests passed!"<<endl;
+	cout<<"tests passed!"<<endl;
 }

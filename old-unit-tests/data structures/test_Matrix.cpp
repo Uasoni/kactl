@@ -1,40 +1,38 @@
 #include "../UnitTest.h"
 #include "../../content/data-structures/Matrix.h"
-#include <fstream>
-#include <sstream>
 
-class test_Matrix :
+class TestMatrix :
 	public UnitTest
 {
 public:
 	ifstream in;
 	int cases;
 
-	test_Matrix() : UnitTest("test_Matrix") {
-		in.open("Matrix.in");
+	TestMatrix() : UnitTest("TestMatrix") {
+		in.open("matrix.in");
 		in >> cases;
 	}
 
-	virtual ~test_Matrix() {
+	virtual ~TestMatrix() {
 		in.close();
 	}
 
 	virtual void run(int subcase) {
 		if (subcase == 0) {
-			Matrix<int> A(3,3,2);
+			matrix<int> A(3,3,2);
 			check((A+A)(2,2),4);
-			check(A*A,Matrix<int>(3,3,12));
+			check(A*A,matrix<int>(3,3,12));
 			A(1,2) = 3;
 			//cout << A;
 			check(A^1,A,"A^1=A");
 			check(A^2,A*A,"A^2=A*A");
- 			Matrix<int> b(3,1,3);
+ 			matrix<int> b(3,1,3);
  			A(1,2) = 5;
  			b(2,0) = 0;
  			b/2 + A*A*b*3 + (A^3)*b - A->*A*b + 5;
 			return;
 		}
-		Matrix<int> A,B,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10;
+		matrix<int> A,B,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10;
 		int c;
 		in >> A >> B >> c;
 		in >> r1 >> r2 >> r3 >> r4 >> r5 >> r6 >> r7 >> r8 >> r9 >> r10; 
@@ -50,9 +48,9 @@ public:
 		check(A^c,r10,"power");
 	}
 
-	virtual int getCount() const {
+	virtual int get_count() const {
 		return cases+1;
 	}
 };
 
-KACTL_AUTOREGISTER_TEST(test_Matrix);
+KACTL_AUTOREGISTER_TEST(TestMatrix);

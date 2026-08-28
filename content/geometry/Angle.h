@@ -1,16 +1,16 @@
 /**
- * Author: Simon Lindholm
+ * Author: simon lindholm
  * Date: 2015-01-31
  * License: CC0
  * Source: me
  * Description: A class for ordering angles (as represented by int points and
- *  a number of rotations around the origin). Useful for rotational sweeping.
- *  Sometimes also represents points or vectors.
+ *  a number of rotations around the origin). useful for rotational sweeping.
+ *  sometimes also represents points or vectors.
  * Usage:
  *  vector<Angle> v = {w[0], w[0].t360() ...}; // sorted
- *  int j = 0; rep(i,0,n) { while (v[j] < v[i].t180()) ++j; }
+ *  int j = 0; for (int i = 0; i < (n); ++i) { while (v[j] < v[i].t180()) ++j; }
  *  // sweeps j such that (j-i) represents the number of positively oriented triangles with vertices at 0 and i
- * Status: Used, works well
+ * Status: used, works well
  */
 #pragma once
 
@@ -33,19 +33,19 @@ bool operator<(Angle a, Angle b) {
 	       make_tuple(b.t, b.half(), a.x * (ll)b.y);
 }
 
-// Given two points, this calculates the smallest angle between
-// them, i.e., the angle that covers the defined line segment.
-pair<Angle, Angle> segmentAngles(Angle a, Angle b) {
+// given two points, this calculates the smallest Angle between
+// them, i.e., the Angle that covers the defined line segment.
+pair<Angle, Angle> segment_angles(Angle a, Angle b) {
 	if (b < a) swap(a, b);
 	return (b < a.t180() ?
 	        make_pair(a, b) : make_pair(b, a.t360()));
 }
-Angle operator+(Angle a, Angle b) { // point a + vector b
+Angle operator+(Angle a, Angle b) { // Point a + vector b
 	Angle r(a.x + b.x, a.y + b.y, a.t);
 	if (a.t180() < r) r.t--;
 	return r.t180() < a ? r.t360() : r;
 }
-Angle angleDiff(Angle a, Angle b) { // angle b - angle a
+Angle angle_diff(Angle a, Angle b) { // Angle b - Angle a
 	int tu = b.t - a.t; a.t = b.t;
 	return {a.x*b.x + a.y*b.y, a.x*b.y - a.y*b.x, tu - (b < a)};
 }

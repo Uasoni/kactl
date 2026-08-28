@@ -1,9 +1,9 @@
 /**
- * Author: Andrew He, chilli
+ * Author: andrew he, chilli
  * Date: 2019-05-07
  * License: CC0
  * Source: folklore
- * Description: Computes the minimum circle that encloses a set of points.
+ * Description: computes the minimum circle that encloses a set of points.
  * Time: expected O(n)
  * Status: stress-tested
  */
@@ -11,17 +11,18 @@
 
 #include "circumcircle.h"
 
-pair<P, double> mec(vector<P> ps) {
-	shuffle(all(ps), mt19937(time(0)));
-	P o = ps[0];
-	double r = 0, EPS = 1 + 1e-8;
-	rep(i,0,sz(ps)) if ((o - ps[i]).dist() > r * EPS) {
+pair<circle_point, double> minimum_enclosing_circle(vector<circle_point> ps) {
+	shuffle(begin(ps), end(ps), mt19937(time(0)));
+	circle_point o = ps[0];
+	double r = 0;
+	const double EPS = 1 + 1e-8;
+	for (int i = 0; i < ((int)(ps).size()); ++i) if ((o - ps[i]).dist() > r * EPS) {
 		o = ps[i], r = 0;
-		rep(j,0,i) if ((o - ps[j]).dist() > r * EPS) {
+		for (int j = 0; j < (i); ++j) if ((o - ps[j]).dist() > r * EPS) {
 			o = (ps[i] + ps[j]) / 2;
 			r = (o - ps[i]).dist();
-			rep(k,0,j) if ((o - ps[k]).dist() > r * EPS) {
-				o = ccCenter(ps[i], ps[j], ps[k]);
+			for (int k = 0; k < (j); ++k) if ((o - ps[k]).dist() > r * EPS) {
+				o = cc_center(ps[i], ps[j], ps[k]);
 				r = (o - ps[i]).dist();
 			}
 		}

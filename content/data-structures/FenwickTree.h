@@ -1,34 +1,36 @@
 /**
- * Author: Lukas Polacek
+ * Author: lukas polacek
  * Date: 2009-10-30
  * License: CC0
- * Source: folklore/TopCoder
- * Description: Computes partial sums a[0] + a[1] + ... + a[pos - 1], and updates single elements a[i],
+ * Source: folklore/top_coder
+ * Description: computes 1-indexed inclusive prefix sums and updates single elements,
  * taking the difference between the old and new value.
- * Time: Both operations are $O(\log N)$.
- * Status: Stress-tested
+ * Time: both operations are $O(\log N)$.
+ * Status: stress-tested
  */
 #pragma once
 
-struct FT {
+struct FenwickTree {
 	vector<ll> s;
-	FT(int n) : s(n) {}
-	void update(int pos, ll dif) { // a[pos] += dif
-		for (; pos < sz(s); pos |= pos + 1) s[pos] += dif;
+	FenwickTree(int n) : s(n + 1) {}
+	void update(int pos, ll dif) { // a[pos] += dif, pos is 1-indexed
+		for (; pos < (int)s.size(); pos += pos & -pos) s[pos] += dif;
 	}
-	ll query(int pos) { // sum of values in [0, pos)
+	ll query(int pos) { // sum of values in [1, pos]
 		ll res = 0;
-		for (; pos > 0; pos &= pos - 1) res += s[pos-1];
+		for (; pos > 0; pos -= pos & -pos) res += s[pos];
 		return res;
 	}
-	int lower_bound(ll sum) {// min pos st sum of [0, pos] >= sum
-		// Returns n if no sum is >= sum, or -1 if empty sum is.
-		if (sum <= 0) return -1;
+	int lower_bound(ll sum) { // min pos such that sum [1, pos] >= sum
+		// returns n + 1 if no prefix works, or 0 for the empty prefix.
+		if (sum <= 0) return 0;
 		int pos = 0;
-		for (int pw = 1 << 25; pw; pw >>= 1) {
-			if (pos + pw <= sz(s) && s[pos + pw-1] < sum)
-				pos += pw, sum -= s[pos-1];
+		int pw = 1;
+		while (pw < (int)s.size()) pw <<= 1;
+		for (; pw; pw >>= 1) {
+			if (pos + pw < (int)s.size() && s[pos + pw] < sum)
+				pos += pw, sum -= s[pos];
 		}
-		return pos;
+		return pos + 1;
 	}
 };

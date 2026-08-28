@@ -1,11 +1,11 @@
 /**
- * Author: Simon Lindholm
+ * Author: simon lindholm
  * Date: 2019-12-28
  * License: CC0
- * Source: https://github.com/hoke-t/tamu-kactl/blob/master/content/data-structures/MoQueries.h
- * Description: Answer interval or tree path queries by finding an approximate TSP through the queries,
+ * Source: https://github.com/hoke-t/tamu-kactl/blob/master/content/data-structures/mo_queries.h
+ * Description: answer interval or tree path queries by finding an approximate TSP through the queries,
  * and moving from one query to the next by adding/removing points at the ends.
- * If values are on tree edges, change \texttt{step} to add/remove the edge $(a, c)$ and remove the initial \texttt{add} call (but keep \texttt{in}).
+ * if values are on tree edges, change \texttt{step} to add/remove the edge $(a, c)$ and remove the initial \texttt{add} call (but keep \texttt{in}).
  * Time: O(N \sqrt Q)
  * Status: stress-tested
  */
@@ -15,48 +15,62 @@ void add(int ind, int end) { ... } // add a[ind] (end = 0 or 1)
 void del(int ind, int end) { ... } // remove a[ind]
 int calc() { ... } // compute current answer
 
-vi mo(vector<pii> Q) {
-	int L = 0, R = 0, blk = 350; // ~N/sqrt(Q)
-	vi s(sz(Q)), res = s;
-#define K(x) pii(x.first/blk, x.second ^ -(x.first/blk & 1))
-	iota(all(s), 0);
-	sort(all(s), [&](int s, int t){ return K(Q[s]) < K(Q[t]); });
-	for (int qi : s) {
-		pii q = Q[qi];
-		while (L > q.first) add(--L, 0);
-		while (R < q.second) add(R++, 1);
-		while (L < q.first) del(L++, 0);
-		while (R > q.second) del(--R, 1);
-		res[qi] = calc();
+vector<int> mo(vector<pii> queries) {
+	int left = 1, right = 0, block_size = 350; // ~N/sqrt(Q)
+	vector<int> order((int)queries.size()), result = order;
+	auto key = [&](pii query) {
+		int block = query.first / block_size;
+		return pii(block, query.second ^ -(block & 1));
+	};
+	iota(begin(order), end(order), 0);
+	sort(begin(order), end(order), [&](int a, int b) {
+		return key(queries[a]) < key(queries[b]);
+	});
+	for (int qi : order) {
+		pii q = queries[qi];
+		while (left > q.first) add(--left, 0);
+		while (right < q.second) add(++right, 1);
+		while (left < q.first) del(left++, 0);
+		while (right > q.second) del(right--, 1);
+		result[qi] = calc();
 	}
-	return res;
+	return result;
 }
 
-vi moTree(vector<array<int, 2>> Q, vector<vi>& ed, int root=0){
-	int N = sz(ed), pos[2] = {}, blk = 350; // ~N/sqrt(Q)
-	vi s(sz(Q)), res = s, I(N), L(N), R(N), in(N), par(N);
-	add(0, 0), in[0] = 1;
+vector<int> mo_tree(vector<array<int, 2>> queries, vector<vector<int>>& ed, int root=1){
+	int n = (int)ed.size() - 1, timer = 0, pos[2] = {root, root}, block_size = 350;
+	vector<int> order((int)queries.size()), result = order, index(n + 1), path(n + 1);
+	vector<int> left(n + 1), right(n + 1), in(n + 1), par(n + 1);
+	add(root, 0), in[root] = 1;
 	auto dfs = [&](int x, int p, int dep, auto& f) -> void {
 		par[x] = p;
-		L[x] = N;
-		if (dep) I[x] = N++;
+		left[x] = timer;
+		if (dep) index[x] = ++timer;
 		for (int y : ed[x]) if (y != p) f(y, x, !dep, f);
-		if (!dep) I[x] = N++;
-		R[x] = N;
+		if (!dep) index[x] = ++timer;
+		right[x] = timer;
 	};
 	dfs(root, -1, 0, dfs);
-#define K(x) pii(I[x[0]] / blk, I[x[1]] ^ -(I[x[0]] / blk & 1))
-	iota(all(s), 0);
-	sort(all(s), [&](int s, int t){ return K(Q[s]) < K(Q[t]); });
-	for (int qi : s) rep(end,0,2) {
-		int &a = pos[end], b = Q[qi][end], i = 0;
-#define step(c) { if (in[c]) { del(a, end); in[a] = 0; } \
-                  else { add(c, end); in[c] = 1; } a = c; }
-		while (!(L[b] <= L[a] && R[a] <= R[b]))
-			I[i++] = b, b = par[b];
+	auto key = [&](array<int, 2> query) {
+		int block = index[query[0]] / block_size;
+		return pii(block, index[query[1]] ^ -(block & 1));
+	};
+	iota(begin(order), end(order), 0);
+	sort(begin(order), end(order), [&](int a, int b) {
+		return key(queries[a]) < key(queries[b]);
+	});
+	for (int qi : order) for (int end = 0; end < 2; ++end) {
+		int &a = pos[end], b = queries[qi][end], i = 0;
+		auto step = [&](int c) {
+			if (in[c]) { del(a, end); in[a] = 0; }
+			else { add(c, end); in[c] = 1; }
+			a = c;
+		};
+		while (!(left[b] <= left[a] && right[a] <= right[b]))
+			path[++i] = b, b = par[b];
 		while (a != b) step(par[a]);
-		while (i--) step(I[i]);
-		if (end) res[qi] = calc();
+		while (i) step(path[i--]);
+		if (end) result[qi] = calc();
 	}
-	return res;
+	return result;
 }

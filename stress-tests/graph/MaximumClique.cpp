@@ -5,11 +5,11 @@ namespace maximal {
 #include "../../content/graph/MaximalCliques.h"
 }
 
-struct timeit {
+struct StressTimer {
 	decltype(chrono::high_resolution_clock::now()) begin;
 	const string label;
-	timeit(string label = "???") : label(label) { begin = chrono::high_resolution_clock::now(); }
-	~timeit() {
+	StressTimer(string label = "???") : label(label) { begin = chrono::high_resolution_clock::now(); }
+	~StressTimer() {
 		auto end = chrono::high_resolution_clock::now();
 		auto duration = chrono::duration_cast<chrono::milliseconds>(end - begin).count();
 		cerr << duration << "ms elapsed [" << label << "]" << endl;
@@ -18,22 +18,21 @@ struct timeit {
 
 
 int main() {
-	rep(it, 0, 100000) {
+	for (int it = 0; it < (100000); ++it) {
 		int n =(rand()%32)+1;
-		vb ed(n);
-		vector<maximal::B> ed2(n);
+		vector<bitset<200>> ed(n + 1);
+		vector<bitset<128>> ed2(n + 1);
 		int p =rand()%100;
-		rep(i, 0, n) rep(j, 0, i) {
+		for (int i = 1; i <= n; ++i) for (int j = 1; j < i; ++j) {
 			ed[i][j] = (rand() % 100) < p;
 			ed[j][i] = ed[i][j];
 			ed2[i][j] = ed[i][j];
 			ed2[j][i] = ed[j][i];
 		}
-		Maxclique clique2(ed);
+		MaximumClique clique2(ed);
 		int mx = 0;
 		maximal::cliques(ed2, [&](auto x){mx = max(mx, int(x.count()));});
-		assert(mx == sz(clique2.maxClique()));
+		assert(mx == (int)(clique2.max_clique()).size());
 	}
-	cout<<"Tests passed!"<<endl;
+	cout<<"tests passed!"<<endl;
 }
-

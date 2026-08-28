@@ -1,14 +1,14 @@
 /**
- * Author: Simon Lindholm
+ * Author: simon lindholm
  * Date: 2015-06-23
  * License: CC0
  * Source: own work
- * Description: Sums of mod'ed arithmetic progressions.
+ * Description: sums of mod'ed arithmetic progressions.
  *
  * \texttt{modsum(to, c, k, m)} = $\sum_{i=0}^{\mathrm{to}-1}{(ki+c) \% m}$.
  * \texttt{divsum} is similar but for floored division.
  * Time: $\log(m)$, with a large constant.
- * Status: Tested for all |k|,|c|,to,m <= 50, and on kattis:aladin
+ * Status: tested for all |k|,|c|,to,m <= 50, and on kattis:aladin
  */
 #pragma once
 

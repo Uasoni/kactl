@@ -2,126 +2,125 @@
 #include "UnitTestManager.h"
 #include "UnitTest.h"
 #include "UnitTestWrapper.h"
-#include <cstdio>
 
 //#include <direct.h>
 
 UnitTestManager::UnitTestManager():
-	m_successCount(0),
-	m_failureCount(0)
+	m_success_count(0),
+	m_failure_count(0)
 {
 }
 
 UnitTestManager::~UnitTestManager()
 {
-	for(auto &it: m_unitTestWrappers)
+	for(auto &it: m_unit_test_wrappers)
 		delete it.second;
 
-	m_unitTestWrappers.clear();
+	m_unit_test_wrappers.clear();
 }
 
-UnitTestManager* UnitTestManager::getInstance()
+UnitTestManager* UnitTestManager::get_instance()
 {
-	static UnitTestManager s_unitTestManager;
+	static UnitTestManager s_unit_test_manager;
 
-	return &s_unitTestManager;
+	return &s_unit_test_manager;
 }
 
-void UnitTestManager::reportCheckFailure(const string& have,
+void UnitTestManager::report_check_failure(const string& have,
 										 const string& want,
 										 const string& message)
 {
 	fprintf(stderr, "FAILED\n");
-	fprintf(stderr, "\tWanted:   \"%s\"\n", want.c_str());
-	fprintf(stderr, "\tReturned: \"%s\"\n", have.c_str());
+	fprintf(stderr, "\t_wanted:   \"%s\"\n", want.c_str());
+	fprintf(stderr, "\t_returned: \"%s\"\n", have.c_str());
 	if(!message.empty())
-		fprintf(stderr, "\tMessage: %s\n", message.c_str());
+		fprintf(stderr, "\t_message: %s\n", message.c_str());
 	fflush(stderr);
 }
 
 
-void UnitTestManager::reportFailure(const string& message)
+void UnitTestManager::report_failure(const string& message)
 {
 	fprintf(stderr, "FAILED\n");
 	if(!message.empty())
-		fprintf(stderr, "\tMessage: %s\n", message.c_str());
+		fprintf(stderr, "\t_message: %s\n", message.c_str());
 	fflush(stderr);
 }
 
-void UnitTestManager::registerWrapper(UnitTestWrapper* unitTestWrapper)
+void UnitTestManager::register_wrapper(UnitTestWrapper* UnitTestWrapper)
 {
-	if(unitTestWrapper == NULL || unitTestWrapper->getUnitTest() == NULL)
+	if(UnitTestWrapper == NULL || UnitTestWrapper->get_unit_test() == NULL)
 		return;
 
-	m_unitTestWrappers.insert(make_pair(unitTestWrapper->getUnitTest()->getName(), unitTestWrapper));
+	m_unit_test_wrappers.insert(make_pair(UnitTestWrapper->get_unit_test()->get_name(), UnitTestWrapper));
 }
 
-void UnitTestManager::runAll()
+void UnitTestManager::run_all()
 {
-	for(auto &it: m_unitTestWrappers)
-		runTest(it.second);
+	for(auto &it: m_unit_test_wrappers)
+		run_test(it.second);
 }
 
-void UnitTestManager::runTest(const string& name)
+void UnitTestManager::run_test(const string& name)
 {
-	map<string, UnitTestWrapper*>::iterator it = m_unitTestWrappers.find(name);
+	map<string, UnitTestWrapper*>::iterator it = m_unit_test_wrappers.find(name);
 
-	if(it == m_unitTestWrappers.end())
+	if(it == m_unit_test_wrappers.end())
 	{
-		fprintf(stderr, "ERROR: Couldn't find test \"%s\"!", name.c_str());
+		fprintf(stderr, "ERROR: couldn't find test \"%s\"!", name.c_str());
 		fflush(stderr);
 		return;
 	}
 
-	runTest(it->second);
+	run_test(it->second);
 }
 
 void
-UnitTestManager::printStatistics() const
+UnitTestManager::print_statistics() const
 {
-	fprintf(stderr, "\nStatistics:\n");
-	fprintf(stderr, "\tSuccesses: %d\n", m_successCount);
-	fprintf(stderr, "\tFailures:  %d\n", m_failureCount);
-	fprintf(stderr, "\tTotal:     %d\n", m_successCount + m_failureCount);
+	fprintf(stderr, "\n_statistics:\n");
+	fprintf(stderr, "\t_successes: %d\n", m_success_count);
+	fprintf(stderr, "\t_failures:  %d\n", m_failure_count);
+	fprintf(stderr, "\t_total:     %d\n", m_success_count + m_failure_count);
 	fflush(stderr);
 }
 
-void UnitTestManager::runTest(UnitTestWrapper* unitTestWrapper)
+void UnitTestManager::run_test(UnitTestWrapper* UnitTestWrapper)
 {
-	UnitTest* unitTest = unitTestWrapper->getUnitTest();
-	int count = unitTest->getCount();
-	string name = unitTest->getName();
+	UnitTest* UnitTest = UnitTestWrapper->get_unit_test();
+	int count = UnitTest->get_count();
+	string name = UnitTest->get_name();
 
-	rep(i, 0, count)
+	for (int i = 0; i < (count); ++i)
 	{
-		fprintf(stderr, "Running test \"%s\" <%d, %d>... ",
-			name.c_str(), i, unitTest->getCount());
+		fprintf(stderr, "running test \"%s\" <%d, %d>... ",
+			name.c_str(), i, UnitTest->get_count());
 		fflush(stderr);
 
 		try
 		{
-			unitTest->run(i);
+			UnitTest->run(i);
 
-			m_successCount++;
+			m_success_count++;
 			fprintf(stderr, "OK\n");
 			fflush(stderr);
 		}
 		catch(const UnitTestFailed&)
 		{
-			m_failureCount++;
+			m_failure_count++;
 		}
 		catch(const exception& e)
 		{
-			m_failureCount++;
+			m_failure_count++;
 			fprintf(stderr, "FAILED\n");
-			fprintf(stderr, "\tException: %s\n", e.what());
+			fprintf(stderr, "\t_exception: %s\n", e.what());
 			fflush(stderr);
 		}
 		catch(...)
 		{
-			m_failureCount++;
+			m_failure_count++;
 			fprintf(stderr, "FAILED\n");
-			fprintf(stderr, "\tUnknown exception caught!\n");
+			fprintf(stderr, "\t_unknown exception caught!\n");
 			fflush(stderr);
 		}
 	}
@@ -131,15 +130,15 @@ int main(int argc, char** argv)
 {
 	if(argc >= 2)
 	{
-		rep(i, 1, argc)
-			UnitTestManager::getInstance()->runTest(argv[i]);
+		for (int i = 1; i < (argc); ++i)
+			UnitTestManager::get_instance()->run_test(argv[i]);
 	}
 	else
 	{
-		UnitTestManager::getInstance()->runAll();
+		UnitTestManager::get_instance()->run_all();
 	}
 
-	UnitTestManager::getInstance()->printStatistics();
+	UnitTestManager::get_instance()->print_statistics();
 
 	return 0;
 }

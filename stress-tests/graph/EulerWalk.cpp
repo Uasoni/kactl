@@ -2,9 +2,9 @@
 
 #include "../../content/graph/EulerWalk.h"
 
-struct UF {
-	vi v;
-	UF(int n) : v(n, -1) {}
+struct UnionFind {
+	vector<int> v;
+	UnionFind(int n) : v(n, -1) {}
 	int find(int x) { return v[x] < 0 ? x : v[x] = find(v[x]); }
 	void join(int a, int b) {
 		a = find(a);
@@ -16,105 +16,105 @@ struct UF {
 	}
 };
 
-bool hasEulerWalk(vector<vector<pii>>& ed, int start, bool undir, bool cycle) {
-	int n = sz(ed);
+bool has_euler_walk(vector<vector<pii>>& ed, int start, bool undir, bool cycle) {
+	int n = (int)ed.size() - 1;
 	int odd = 0;
-	bool anyEdges = false;
-	vi nins(n);
-	rep(i,0,n) {
+	bool any_edges = false;
+	vector<int> nins(n + 1);
+	for (int i = 1; i <= n; ++i) {
 		for(auto &x: ed[i]) nins[x.first]++;
 	}
-	rep(i,0,n) {
-		if (!ed[i].empty()) anyEdges = true;
+	for (int i = 1; i <= n; ++i) {
+		if (!ed[i].empty()) any_edges = true;
 		if (undir) {
-			assert(sz(ed[i]) == nins[i]);
+			assert((int)(ed[i]).size() == nins[i]);
 			int nout = 0;
 			for(auto &x: ed[i]) if (x.first != i) nout++;
 			if (i != start && nout % 2) odd++;
 		}
 		else {
-			if (nins[i] == sz(ed[i])) continue;
+			if (nins[i] == (int)(ed[i]).size()) continue;
 			if (cycle) return false;
-			if (abs(nins[i] - sz(ed[i])) > 1) { return false; }
-			if (nins[i] < sz(ed[i]) && i != start) { return false; }
+			if (abs(nins[i] - (int)(ed[i]).size()) > 1) { return false; }
+			if (nins[i] < (int)(ed[i]).size() && i != start) { return false; }
 		}
 	}
 	if (odd > !cycle) { return false; }
-	if (ed[start].empty() && anyEdges) { return false; }
-	UF uf(n);
-	rep(i,0,n) for(auto &x: ed[i]) uf.join(i, x.first);
+	if (ed[start].empty() && any_edges) { return false; }
+	UnionFind uf(n + 1);
+	for (int i = 1; i <= n; ++i) for(auto &x: ed[i]) uf.join(i, x.first);
 	int comp = 0;
-	rep(i,0,n) if (uf.find(i) == i) {
+	for (int i = 1; i <= n; ++i) if (uf.find(i) == i) {
 		if (ed[i].empty()) continue;
 		comp++;
 	}
 	return comp <= 1;
 }
 
-vi eulerCycle(vector<vector<pii>>& gr, int nedges, int src=0) {
-	int n = sz(gr);
-	vi D(n), its(n), eu(nedges), ret, s = {src};
-	// D[src]++; // to allow Euler paths, not just cycles
+vector<int> euler_cycle(vector<vector<pii>>& gr, int nedges, int src=1) {
+	int n = (int)(gr).size();
+	vector<int> D(n), its(n), eu(nedges), ret, s = {src};
+	// D[src]++; // to allow euler paths, not just cycles
 	while (!s.empty()) {
-		int x = s.back(), y, e, &it = its[x], end = sz(gr[x]);
+		int x = s.back(), y, e, &it = its[x], end = (int)(gr[x]).size();
 		if (it == end){ ret.push_back(x); s.pop_back(); continue; }
 		tie(y, e) = gr[x][it++];
 		if (!eu[e]) {
 			D[x]--, D[y]++;
 			eu[e] = 1; s.push_back(y);
 		}}
-	for(auto &x: D) if (x < 0 || sz(ret) != nedges+1) return {};
+	for(auto &x: D) if (x < 0 || (int)(ret).size() != nedges+1) return {};
 	return {ret.rbegin(), ret.rend()};
 }
 
 int main() {
-	rep(cycle,0,2) rep(undir,0,2) {
-		rep(it,0,10000) {
+	for (int cycle = 0; cycle < (2); ++cycle) for (int undir = 0; undir < (2); ++undir) {
+		for (int it = 0; it < (10000); ++it) {
 			int n = rand() % 10 + 1;
 			int m = rand() % 20;
-			int start = rand() % n;
-			vector<vector<pii>> ed(n);
-			map<pii, vi> allEds;
-			vector<pii> theEdges;
-			rep(i,0,m) {
-				int a = rand() % n;
-				int b = rand() % n;
+			int start = rand() % n + 1;
+			vector<vector<pii>> ed(n + 1);
+			map<pii, vector<int>> all_eds;
+			vector<pii> the_edges;
+			for (int i = 0; i < (m); ++i) {
+				int a = rand() % n + 1;
+				int b = rand() % n + 1;
 				ed[a].emplace_back(b, i);
-				allEds[pii(a, b)].push_back(i);
+				all_eds[pii(a, b)].push_back(i);
 				if (undir) {
 					ed[b].emplace_back(a, i);
-					allEds[pii(b, a)].push_back(i);
+					all_eds[pii(b, a)].push_back(i);
 				}
-				theEdges.emplace_back(a, b);
+				the_edges.emplace_back(a, b);
 			}
 
-			vi res = cycle ? eulerCycle(ed, m, start) : eulerWalk(ed, m, start);
+			vector<int> res = cycle ? euler_cycle(ed, m, start) : euler_walk(ed, m, start);
 			if (0) {
 				cout << n << ' ' << m << ' ' << start << ' ' << undir << ' ' << cycle << endl;
-				rep(i,0,n) {
+				for (int i = 1; i <= n; ++i) {
 					for(auto &x: ed[i]) cout << x.first << ' ';
 					cout << endl;
 				}
 				cout << "returned" << endl;
 				for(auto &x: res) cout << x << ' ';
 				cout << endl;
-				cout << "of length " << sz(res) << endl;
+				cout << "of length " << (int)(res).size() << endl;
 			}
 
 			if (res.empty()) {
-				assert(!hasEulerWalk(ed, start, undir, cycle));
+				assert(!has_euler_walk(ed, start, undir, cycle));
 			} else {
-				assert(hasEulerWalk(ed, start, undir, cycle));
+				assert(has_euler_walk(ed, start, undir, cycle));
 
 				assert(res[0] == start);
 				if (cycle) assert(res.back() == start);
 				int cur = start;
-				vi seenEdge(m);
-				rep(i,1,sz(res)) {
+				vector<int> seen_edge(m);
+				for (int i = 1; i < ((int)(res).size()); ++i) {
 					int x = res[i];
-					for(auto &eid: allEds[pii(cur, x)]) {
-						if (!seenEdge[eid]) {
-							seenEdge[eid] = 1;
+					for(auto &eid: all_eds[pii(cur, x)]) {
+						if (!seen_edge[eid]) {
+							seen_edge[eid] = 1;
 							goto ok;
 						}
 					}
@@ -125,5 +125,5 @@ ok:
 			}
 		}
 	}
-	cout << "Tests passed!" << endl;
+	cout << "tests passed!" << endl;
 }

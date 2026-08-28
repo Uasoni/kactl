@@ -1,27 +1,25 @@
 #include "../UnitTest.h"
 #include "../../content/geometry/lineDistance.h"
 #include "../../content/geometry/Point3D.h"
-#include <fstream>
-#include <sstream>
 
-class test_lineDistDouble :
+class TestLineDistDouble :
 	public UnitTest
 {
 public:
 	ifstream in,out;
 	int cases;
-	test_lineDistDouble() : UnitTest("test_lineDistDouble") {
-		ifstream file("lineDistDouble.in");
+	TestLineDistDouble() : UnitTest("TestLineDistDouble") {
+		ifstream file("line_dist_double.in");
 		int n = 0; double d;
 		while (file >> d) ++n;
 		file.close();
 		cases = n/6;
 
-		in.open("lineDistDouble.in");
-		out.open("lineDistDouble.out");
+		in.open("line_dist_double.in");
+		out.open("line_dist_double.out");
 	}
 
-	virtual ~test_lineDistDouble()
+	virtual ~TestLineDistDouble()
 	{
 	}
 
@@ -31,13 +29,13 @@ public:
 	void test(T p1, T p2, T p3, double a) {
 		stringstream ss;
 		ss << p1 << " " << p2 << " " << p3;
-		check(lineDist(p1,p2,p3), a, ss.str());
+		check(line_dist(p1,p2,p3), a, ss.str());
 	}*/
 	template<class T>
 	void test(T p1, T p2, T p3, double a) {
 		stringstream ss;
 		ss << p1 << " " << p2 << " " << p3;
-		double r = lineDist(p1,p2,p3);
+		double r = line_dist(p1,p2,p3);
 		ss << " expected " << a << " received " << r;
 		if (abs(r-a) > 1e-3)
 			fail(ss.str());
@@ -65,9 +63,9 @@ public:
 		test(P3(p1.x,8.2,p1.y),P3(p2.x,8.2,p2.y),P3(p3.x,6.2,p3.y),sqrt(a*a+4));
 	}
 
-	virtual int getCount() const {
+	virtual int get_count() const {
 		return cases;
 	}
 };
 
-KACTL_AUTOREGISTER_TEST(test_lineDistDouble);
+KACTL_AUTOREGISTER_TEST(TestLineDistDouble);

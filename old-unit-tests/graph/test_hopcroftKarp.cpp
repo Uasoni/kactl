@@ -1,20 +1,19 @@
 #include "../UnitTest.h"
 #include "../../content/graph/HopcroftKarp.h"
-#include <fstream>
 
-class test_HopcorftKarp :
+class TestHopcorftKarp :
 	public UnitTest
 {
 	public:
 		ifstream in;
 		int cases;
 
-		test_HopcorftKarp() : UnitTest("test_HopcorftKarp") {
-			in.open("Matching.in");
+		TestHopcorftKarp() : UnitTest("TestHopcorftKarp") {
+			in.open("matching.in");
 			in >> cases;
 		}
 
-		virtual ~test_HopcorftKarp() {
+		virtual ~TestHopcorftKarp() {
 			in.close();
 		}
 
@@ -27,8 +26,8 @@ class test_HopcorftKarp :
 				x--; y--;
 				g[x].push_back(y);
 			}
-			vi b(m, -1);
-			int res = hopcroftKarp(g, b);
+			vector<int> b(m, -1);
+			int res = hopcroft_karp(g, b);
 			if (subcase == 0) check(res, 2, "0");
 			if (subcase == 1) check(res, 43, "1");
 			if (subcase == 2) check(res, 40, "2");
@@ -36,9 +35,9 @@ class test_HopcorftKarp :
 			if (subcase == 4) check(res, 47, "4");
 		}
 
-		virtual int getCount() const {
+		virtual int get_count() const {
 			return cases;
 		}
 };
 
-KACTL_AUTOREGISTER_TEST(test_HopcorftKarp);
+KACTL_AUTOREGISTER_TEST(TestHopcorftKarp);

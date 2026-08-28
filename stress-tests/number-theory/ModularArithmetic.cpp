@@ -3,18 +3,18 @@
 #include "../../content/number-theory/ModularArithmetic.h"
 
 int main() {
-	rep(a,0,mod) rep(b,1,mod) {
-		Mod ma(a);
-		Mod mb(b);
-		Mod mc = ma / mb;
+	for (int a = 0; a < MOD; ++a) for (int b = 1; b < MOD; ++b) {
+		ModInt ma(a);
+		ModInt mb(b);
+		ModInt mc = ma / mb;
 		assert((mc * mb).x == a);
 	}
-	Mod a = 2;
+	ModInt a = 2;
 	ll cur=1;
-	rep(i, 0, 17) {
+	for (int i = 0; i < (17); ++i) {
 		assert((a ^ i).x == cur);
-		cur = (cur * 2) % mod;
+		cur = (cur * 2) % MOD;
 		// cout << i << ": " << (a ^ i).x << endl;
 	}
-	cout<<"Tests passed!"<<endl;
+	cout<<"tests passed!"<<endl;
 }

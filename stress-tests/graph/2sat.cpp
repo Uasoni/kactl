@@ -1,13 +1,14 @@
 #include "../utilities/template.h"
+#include "../utilities/random.h"
 
 #include "../../content/graph/2sat.h"
 
 int main1() {
 	const int N = 100000, M = 10000000;
-	// Random constraints, unsolvable
+	// random constraints, unsolvable
 	{
 		TwoSat ts(N);
-		rep(i,0,M) {
+		for (int i = 0; i < (M); ++i) {
 			int r = rand();
 			int s = r;
 			r >>= 2;
@@ -15,16 +16,16 @@ int main1() {
 			r >>= 5;
 			int b = r % N;
 			if (a == b) continue;
-			ts.either(a ^ (s&1 ? 0 : -1), b ^ (s&2 ? 0 : -1));
+			ts.either(s & 1 ? a + 1 : -(a + 1), s & 2 ? b + 1 : -(b + 1));
 		}
 		assert(ts.solve() == 0);
 	}
-	// Random solvable instance
+	// random solvable instance
 	{
 		vector<bool> v(N);
-		rep(i,0,N) v[i] = rand() & (1 << 20);
+		for (int i = 0; i < (N); ++i) v[i] = rand() & (1 << 20);
 		TwoSat ts(N);
-		rep(i,0,M) {
+		for (int i = 0; i < (M); ++i) {
 			int r = rand();
 			int s = r;
 			r >>= 2;
@@ -32,7 +33,7 @@ int main1() {
 			r >>= 5;
 			int b = r % N;
 			if (a == b) continue;
-			ts.either(a ^ (v[a] ? 0 : -1), b ^ (s&1 ? 0 : -1));
+			ts.either(v[a] ? a + 1 : -(a + 1), s & 1 ? b + 1 : -(b + 1));
 		}
 		assert(ts.solve() == 1);
 	}
@@ -42,11 +43,11 @@ int main1() {
 int main2() {
 	int N = 4;
 	TwoSat ts(N);
-	ts.either(0,1);
-	ts.either(0,~1);
-	ts.either(~2,~3);
+	ts.either(1, 2);
+	ts.either(1, -2);
+	ts.either(-3, -4);
 	assert(ts.solve()==1);
-	assert(ts.values == vi({1, 1, 0, 0}));
+	assert(ts.values == vector<int>({-1, 1, 1, 0, 0}));
 	return 0;
 }
 
@@ -57,18 +58,18 @@ int ra() {
 	return X >> 1;
 }
 
-// Test at_most_one
+// test at_most_one
 int main() {
 	main1();
 	main2();
 	const int N = 100, M = 400;
-	rep(it,0,100) {
+	for (int it = 0; it < (100); ++it) {
 		vector<bool> v(N);
-		rep(i,0,N) v[i] = ra() & (1 << 20);
+		for (int i = 0; i < (N); ++i) v[i] = ra() & (1 << 20);
 		TwoSat ts(N);
-		vector<vi> atm;
-		vi r;
-		rep(i,0,M) {
+		vector<vector<int>> atm;
+		vector<int> r;
+		for (int i = 0; i < (M); ++i) {
 			if (ra()%100 < 5) {
 				int r = ra();
 				int s = r;
@@ -77,29 +78,30 @@ int main() {
 				r >>= 5;
 				int b = r % N;
 				if (a == b) continue;
-				ts.either(v[a] ? a : ~a, (s&1) ? b : ~b);
+				ts.either(v[a] ? a + 1 : -(a + 1), (s&1) ? b + 1 : -(b + 1));
 			} else {
 				int k = ra() % 4 + 1;
 				r.clear();
-				rep(ki,0,k-1) {
+				for (int ki = 0; ki < (k-1); ++ki) {
 					int a = ra() % N;
-					r.push_back(v[a] ? ~a : a);
+					r.push_back(v[a] ? -(a + 1) : a + 1);
 				}
-				r.push_back(ra() % (2*N) - N);
-				random_shuffle(all(r), [](int x) { return ra() % x; });
-				ts.atMostOne(r);
+				int variable = ra() % N + 1;
+				r.push_back(ra() & 1 ? variable : -variable);
+				shuffle(begin(r), end(r), stress_rng);
+				ts.at_most_one(r);
 				atm.push_back(r);
 			}
 		}
 		assert(ts.solve());
 		int to = 0;
-		rep(i,0,N) to += (ts.values[i] == v[i]);
+		for (int i = 0; i < N; ++i) to += (ts.values[i + 1] == v[i]);
 		for(auto &r: atm) {
 			int co = 0;
-			for(auto &x: r) co += (ts.values[max(x, ~x)] == (x >= 0));
+			for(auto &x: r) co += (ts.values[abs(x)] == (x > 0));
 			assert(co <= 1);
 		}
 	}
-	cout<<"Tests passed!"<<endl;
+	cout<<"tests passed!"<<endl;
 	return 0;
 }

@@ -2,7 +2,7 @@
 
 #include "../../content/data-structures/Treap.h"
 
-pair<Node*, Node*> split2(Node* n, int v) {
+pair<TreapNode*, TreapNode*> split2(TreapNode* n, int v) {
 	if (!n) return {};
 	if (n->val >= v) {
 		auto pa = split2(n->l, v);
@@ -26,44 +26,45 @@ int ra() {
 
 int main() {
 	srand(3);
-	rep(it,0,1000) {
-		vector<Node> nodes;
-		vi exp;
-		rep(i,0,10) {
+	for (int it = 0; it < (1000); ++it) {
+		vector<TreapNode> nodes;
+		vector<int> exp;
+		for (int i = 0; i < (10); ++i) {
 			nodes.emplace_back(i*2+2);
 			exp.emplace_back(i*2+2);
 		}
-		Node* n = 0;
-		rep(i,0,10)
+		TreapNode* n = 0;
+		for (int i = 0; i < (10); ++i)
 			n = merge(n, &nodes[i]);
 
 		int v = rand() % 25;
 		int left = cnt(split2(n, v).first);
-		int rleft = (int)(lower_bound(all(exp), v) - exp.begin());
+		int rleft = (int)(lower_bound(begin(exp), end(exp), v) - exp.begin());
 		assert(left == rleft);
 	}
 
-	rep(it,0,10000) {
-		vector<Node> nodes;
-		vi exp;
-		rep(i,0,10) nodes.emplace_back(i);
-		rep(i,0,10) exp.emplace_back(i);
-		Node* n = 0;
-		rep(i,0,10)
+	for (int it = 0; it < (10000); ++it) {
+		vector<TreapNode> nodes;
+		vector<int> exp;
+		for (int i = 0; i < (10); ++i) nodes.emplace_back(i);
+		for (int i = 0; i < (10); ++i) exp.emplace_back(i);
+		TreapNode* n = 0;
+		for (int i = 0; i < (10); ++i)
 			n = merge(n, &nodes[i]);
 
 		int i = ra() % 11, j = ra() % 11;
 		if (i > j) swap(i, j);
+		if (i == j) continue;
 		int k = ra() % 11;
 		if (i < k && k < j) continue;
 
-		move(n, i, j, k);
+		move(n, i + 1, j, k + 1);
 		// cerr << i << ' ' << j << ' ' << k << endl;
 
 		int nk = (k >= j ? k - (j - i) : k);
-		vi iv(exp.begin() + i, exp.begin() + j);
+		vector<int> iv(exp.begin() + i, exp.begin() + j);
 		exp.erase(exp.begin() + i, exp.begin() + j);
-		exp.insert(exp.begin() + nk, all(iv));
+		exp.insert(exp.begin() + nk, begin(iv), end(iv));
 
 		int ind = 0;
 		each(n, [&](int x) {
@@ -72,5 +73,5 @@ int main() {
 		});
 		// cerr << endl;
 	}
-	cout<<"Tests passed!"<<endl;
+	cout<<"tests passed!"<<endl;
 }

@@ -1,26 +1,24 @@
 #include "../UnitTest.h"
 #include "../../content/geometry/segmentDistance.h"
-#include <fstream>
-#include <sstream>
 
-class test_segDistDouble :
+class TestSegDistDouble :
 	public UnitTest
 {
 public:
 	ifstream in,out;
 	int cases;
-	test_segDistDouble() : UnitTest("test_segDistDouble") {
-		ifstream file("segDistDouble.in");
+	TestSegDistDouble() : UnitTest("TestSegDistDouble") {
+		ifstream file("seg_dist_double.in");
 		int n = 0; double d;
 		while (file >> d) ++n;
 		file.close();
 		cases = n/6;
 
-		in.open("segDistDouble.in");
-		out.open("segDistDouble.out");
+		in.open("seg_dist_double.in");
+		out.open("seg_dist_double.out");
 	}
 
-	virtual ~test_segDistDouble()
+	virtual ~TestSegDistDouble()
 	{
 	}
 
@@ -30,7 +28,7 @@ public:
 	void test(T p1, T p2, T p3, double a) {
 		stringstream ss;
 		ss << p1 << " " << p2 << " " << p3;
-		check(segDist(p1,p2,p3), a, ss.str());
+		check(seg_dist(p1,p2,p3), a, ss.str());
 	}
 
 	virtual void run(int subcase)
@@ -51,10 +49,10 @@ public:
 		test(p2.perp()*-1,p1.perp()*-1,p3.perp()*-1,a);
 	}
 
-	virtual int getCount() const
+	virtual int get_count() const
 	{
 		return cases;
 	}
 };
 
-KACTL_AUTOREGISTER_TEST(test_segDistDouble);
+KACTL_AUTOREGISTER_TEST(TestSegDistDouble);

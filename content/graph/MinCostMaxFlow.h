@@ -1,89 +1,88 @@
 /**
- * Author: Stanford
- * Date: Unknown
- * Source: Stanford Notebook
- * Description: Min-cost max-flow.
- *  If costs can be negative, call setpi before maxflow, but note that negative cost cycles are not supported.
- *  To obtain the actual flow, look at positive values only.
- * Status: Tested on kattis:mincostmaxflow, stress-tested against another implementation
- * Time: $O(F E \log(V))$ where F is max flow. $O(VE)$ for setpi.
+ * Author: stanford
+ * Date: unknown
+ * Source: stanford notebook
+ * Description: min-cost max-flow.
+ *  if costs can be negative, call set\_pi before max\_flow, but note that negative cost cycles are not supported.
+ *  to obtain the actual flow, look at positive values only.
+ * vertices are numbered $1..n$.
+ * Status: tested on kattis:mincostmaxflow, stress-tested against another implementation
+ * Time: $O(F E \log(V))$ where F is max flow. $O(VE)$ for set\_pi.
  */
 #pragma once
 
-// #include <bits/extc++.h> /// include-line, keep-include
-
 const ll INF = numeric_limits<ll>::max() / 4;
 
-struct MCMF {
-	struct edge {
+struct MinCostMaxFlowGraph {
+	struct Edge {
 		int from, to, rev;
 		ll cap, cost, flow;
 	};
-	int N;
-	vector<vector<edge>> ed;
-	vi seen;
+	int vertex_count;
+	vector<vector<Edge>> ed;
+	vector<int> seen;
 	vector<ll> dist, pi;
-	vector<edge*> par;
+	vector<Edge*> par;
 
-	MCMF(int N) : N(N), ed(N), seen(N), dist(N), pi(N), par(N) {}
+	MinCostMaxFlowGraph(int n) : vertex_count(n), ed(n + 1), seen(n + 1),
+		dist(n + 1), pi(n + 1), par(n + 1) {}
 
-	void addEdge(int from, int to, ll cap, ll cost) {
+	void add_edge(int from, int to, ll cap, ll cost) {
 		if (from == to) return;
-		ed[from].push_back(edge{ from,to,sz(ed[to]),cap,cost,0 });
-		ed[to].push_back(edge{ to,from,sz(ed[from])-1,0,-cost,0 });
+		ed[from].push_back(Edge{ from,to,(int)(ed[to]).size(),cap,cost,0 });
+		ed[to].push_back(Edge{ to,from,(int)(ed[from]).size()-1,0,-cost,0 });
 	}
 
-	void path(int s) {
-		fill(all(seen), 0);
-		fill(all(dist), INF);
+	void shortest_path(int s) {
+		fill(begin(seen), end(seen), 0);
+		fill(begin(dist), end(dist), INF);
+		fill(begin(par), end(par), nullptr);
 		dist[s] = 0; ll di;
 
-		__gnu_pbds::priority_queue<pair<ll, int>> q;
-		vector<decltype(q)::point_iterator> its(N);
+		priority_queue<pair<ll, int>, vector<pair<ll, int>>, greater<pair<ll, int>>> q;
 		q.push({ 0, s });
 
 		while (!q.empty()) {
 			s = q.top().second; q.pop();
+			if (seen[s]) continue;
 			seen[s] = 1; di = dist[s] + pi[s];
-			for (edge& e : ed[s]) if (!seen[e.to]) {
+			for (Edge& e : ed[s]) if (!seen[e.to]) {
 				ll val = di - pi[e.to] + e.cost;
 				if (e.cap - e.flow > 0 && val < dist[e.to]) {
 					dist[e.to] = val;
 					par[e.to] = &e;
-					if (its[e.to] == q.end())
-						its[e.to] = q.push({ -dist[e.to], e.to });
-					else
-						q.modify(its[e.to], { -dist[e.to], e.to });
+					q.push({dist[e.to], e.to});
 				}
 			}
 		}
-		rep(i,0,N) pi[i] = min(pi[i] + dist[i], INF);
+		for (int i = 1; i <= vertex_count; ++i) pi[i] = min(pi[i] + dist[i], INF);
 	}
 
-	pair<ll, ll> maxflow(int s, int t) {
-		ll totflow = 0, totcost = 0;
-		while (path(s), seen[t]) {
+	pair<ll, ll> max_flow(int s, int t) {
+		ll total_flow = 0, total_cost = 0;
+		while (shortest_path(s), seen[t]) {
 			ll fl = INF;
-			for (edge* x = par[t]; x; x = par[x->from])
+			for (Edge* x = par[t]; x; x = par[x->from])
 				fl = min(fl, x->cap - x->flow);
 
-			totflow += fl;
-			for (edge* x = par[t]; x; x = par[x->from]) {
+			total_flow += fl;
+			for (Edge* x = par[t]; x; x = par[x->from]) {
 				x->flow += fl;
 				ed[x->to][x->rev].flow -= fl;
 			}
 		}
-		rep(i,0,N) for(edge& e : ed[i]) totcost += e.cost * e.flow;
-		return {totflow, totcost/2};
+		for (int i = 1; i <= vertex_count; ++i)
+			for (Edge& e : ed[i]) total_cost += e.cost * e.flow;
+		return {total_flow, total_cost/2};
 	}
 
-	// If some costs can be negative, call this before maxflow:
-	void setpi(int s) { // (otherwise, leave this out)
-		fill(all(pi), INF); pi[s] = 0;
-		int it = N, ch = 1; ll v;
+	// if some costs can be negative, call this before max_flow:
+	void set_pi(int s) { // (otherwise, leave this out)
+		fill(begin(pi), end(pi), INF); pi[s] = 0;
+		int it = vertex_count, ch = 1; ll v;
 		while (ch-- && it--)
-			rep(i,0,N) if (pi[i] != INF)
-			  for (edge& e : ed[i]) if (e.cap)
+			for (int i = 1; i <= vertex_count; ++i) if (pi[i] != INF)
+			  for (Edge& e : ed[i]) if (e.cap)
 				  if ((v = pi[i] + e.cost) < pi[e.to])
 					  pi[e.to] = v, ch = 1;
 		assert(it >= 0); // negative cost cycle

@@ -2,45 +2,48 @@
 
 #include "../../content/data-structures/LazySegmentTree.h"
 
-static unsigned R;
+static unsigned random_state;
 int ra() {
-	R *= 791231;
-	R += 1231;
-	return (int)(R >> 1);
+	random_state *= 791231;
+	random_state += 1231;
+	return (int)(random_state >> 1);
 }
 
 volatile int res;
 int main() {
-	int N = 10;
-	vi v(N);
-	iota(all(v), 0);
-	random_shuffle(all(v), [](int x) { return ra() % x; });
-	Node* tr = new Node(v,0,N);
-	rep(i,0,N) rep(j,0,N) if (i <= j) {
-		int ma = -inf;
-		rep(k,i,j) ma = max(ma, v[k]);
-		assert(ma == tr->query(i,j));
+	int n = 10;
+	vector<int> v(n);
+	iota(begin(v), end(v), 0);
+	mt19937 rng(17);
+	shuffle(begin(v), end(v), rng);
+	LazySegmentTree tree(v);
+	for (int left = 1; left <= n; ++left)
+		for (int right = left; right <= n; ++right) {
+		int expected = -INF;
+		for (int k = left; k <= right; ++k)
+			expected = max(expected, v[k - 1]);
+		assert(expected == tree.query(left, right));
 	}
-	rep(it,0,1000000) {
-		int i = ra() % (N+1), j = ra() % (N+1);
-		if (i > j) swap(i, j);
+	for (int it = 0; it < (1000000); ++it) {
+		int left = ra() % n + 1, right = ra() % n + 1;
+		if (left > right) swap(left, right);
 		int x = (ra() % 10) - 5;
 
 		int r = ra() % 100;
 		if (r < 30) {
-			::res = tr->query(i, j);
-			int ma = -inf;
-			rep(k,i,j) ma = max(ma, v[k]);
+			::res = tree.query(left, right);
+			int ma = -INF;
+			for (int k = left; k <= right; ++k) ma = max(ma, v[k - 1]);
 			assert(ma == ::res);
 		}
 		else if (r < 70) {
-			tr->add(i, j, x);
-			rep(k,i,j) v[k] += x;
+			tree.add(left, right, x);
+			for (int k = left; k <= right; ++k) v[k - 1] += x;
 		}
 		else {
-			tr->set(i, j, x);
-			rep(k,i,j) v[k] = x;
+			tree.set(left, right, x);
+			for (int k = left; k <= right; ++k) v[k - 1] = x;
 		}
 	}
-	cout<<"Tests passed!"<<endl;
+	cout<<"tests passed!"<<endl;
 }

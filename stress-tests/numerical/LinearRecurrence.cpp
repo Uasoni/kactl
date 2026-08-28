@@ -4,9 +4,9 @@
 
 template<class F>
 void gen(vector<ll>& v, int at, F f) {
-	if (at == sz(v)) f();
+	if (at == (int)(v).size()) f();
 	else {
-		rep(i,0,mod) {
+		for (int i = 0; i < MOD; ++i) {
 			v[at] = i;
 			gen(v, at+1, f);
 		}
@@ -14,7 +14,7 @@ void gen(vector<ll>& v, int at, F f) {
 }
 
 int main() {
-	rep(n,1,5) {
+	for (int n = 1; n < (5); ++n) {
 		vector<ll> start(n);
 		vector<ll> coef(n);
 		int size = 10*n + 3;
@@ -22,14 +22,15 @@ int main() {
 		gen(start,0,[&]() {
 			gen(coef,0,[&]() {
 				for(auto &x:full) x = 0;
-				rep(i,0,n) full[i] = start[i];
-				rep(i,n,size) rep(j,0,n) full[i] = (full[i] + coef[j] * full[i-1 - j]) % mod;
-	// rep(i,0,size) cerr << full[i] << ' '; cerr << endl;
-	// rep(i,0,n) cerr << coef[i] << ' '; cerr << endl;
-	// LinearRec lr(start, coef);
-	// rep(i,0,size) { cerr << lr.Get(i) << ' '; } cerr << endl;
-				rep(i,0,size) {
-					auto v = linearRec(start, coef, i);
+				for (int i = 0; i < (n); ++i) full[i] = start[i];
+				for (int i = n; i < size; ++i) for (int j = 0; j < n; ++j)
+					full[i] = (full[i] + coef[j] * full[i-1 - j]) % MOD;
+	// for (int i = 0; i < (size); ++i) cerr << full[i] << ' '; cerr << endl;
+	// for (int i = 0; i < (n); ++i) cerr << coef[i] << ' '; cerr << endl;
+	// linear_rec lr(start, coef);
+	// for (int i = 0; i < (size); ++i) { cerr << lr.get(i) << ' '; } cerr << endl;
+				for (int i = 0; i < (size); ++i) {
+					auto v = linear_rec(start, coef, i);
 	// cerr << v << ' ';
 					assert(v == full[i]);
 				}
@@ -38,5 +39,5 @@ int main() {
 			});
 		});
 	}
-	cout<<"Tests passed!"<<endl;
+	cout<<"tests passed!"<<endl;
 }

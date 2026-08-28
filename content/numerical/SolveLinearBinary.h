@@ -1,46 +1,46 @@
 /**
- * Author: Simon Lindholm
+ * Author: simon lindholm
  * Date: 2016-08-27
  * License: CC0
  * Source: own work
- * Description: Solves $Ax = b$ over $\mathbb F_2$. If there are multiple solutions, one is returned arbitrarily.
- *  Returns rank, or -1 if no solutions. Destroys $A$ and $b$.
+ * Description: solves $ax = b$ over $\mathbb F_2$ using 1-indexed rows and
+ *  columns. if there are multiple solutions, one is returned arbitrarily.
+ *  returns rank, or -1 if no solutions. destroys $matrix$ and $b$.
  * Time: O(n^2 m)
- * Status: bruteforce-tested for n, m <= 4
+ * Status: BruteForce-tested for n, m <= 4
  */
 #pragma once
 
-typedef bitset<1000> bs;
-
-int solveLinear(vector<bs>& A, vi& b, bs& x, int m) {
-	int n = sz(A), rank = 0, br;
-	assert(m <= sz(x));
-	vi col(m); iota(all(col), 0);
-	rep(i,0,n) {
-		for (br=i; br<n; ++br) if (A[br].any()) break;
-		if (br == n) {
-			rep(j,i,n) if(b[j]) return -1;
+int solve_linear(vector<bitset<1000>>& matrix, vector<int>& b, bitset<1000>& x, int m) {
+	int n = (int)matrix.size() - 1, rank = 0, br;
+	assert(m < (int)x.size());
+	vector<int> col(m + 1); iota(next(begin(col)), end(col), 1);
+	for (int i = 1; i <= min(n, m); ++i) {
+		for (br=i; br<=n; ++br) if ((matrix[br] >> i).any()) break;
+		if (br > n) {
+			for (int j = i; j <= n; ++j) if(b[j]) return -1;
 			break;
 		}
-		int bc = (int)A[br]._Find_next(i-1);
-		swap(A[i], A[br]);
+		int bc = (int)matrix[br]._Find_next(i-1);
+		swap(matrix[i], matrix[br]);
 		swap(b[i], b[br]);
 		swap(col[i], col[bc]);
-		rep(j,0,n) if (A[j][i] != A[j][bc]) {
-			A[j].flip(i); A[j].flip(bc);
+		for (int j = 1; j <= n; ++j) if (matrix[j][i] != matrix[j][bc]) {
+			matrix[j].flip(i); matrix[j].flip(bc);
 		}
-		rep(j,i+1,n) if (A[j][i]) {
+		for (int j = i+1; j <= n; ++j) if (matrix[j][i]) {
 			b[j] ^= b[i];
-			A[j] ^= A[i];
+			matrix[j] ^= matrix[i];
 		}
 		rank++;
 	}
 
-	x = bs();
-	for (int i = rank; i--;) {
+	x = bitset<1000>();
+	for (int i = rank + 1; i <= n; ++i) if (b[i]) return -1;
+	for (int i = rank; i >= 1; --i) {
 		if (!b[i]) continue;
 		x[col[i]] = 1;
-		rep(j,0,i) b[j] ^= A[j][i];
+		for (int j = 1; j < i; ++j) b[j] ^= matrix[j][i];
 	}
 	return rank; // (multiple solutions if rank < m)
 }

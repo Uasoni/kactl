@@ -2,44 +2,43 @@
 
 #include "../../content/various/LIS.h"
 
-template<class I> vi lisWeak(const vector<I>& S) {
-	if (S.empty()) return {};
-	vi prev(sz(S));
-	typedef pair<I, int> p;
-	vector<p> res;
-	rep(i,0,sz(S)) {
+template<class I> vector<int> lis_weak(const vector<I>& values) {
+	if (values.empty()) return {};
+	vector<int> prev((int)(values).size());
+	vector<pair<I, int>> res;
+	for (int i = 0; i < ((int)(values).size()); ++i) {
 		// 0 -> i for longest non-decreasing subsequence
-		auto it = lower_bound(all(res), p{S[i], i});
+		auto it = lower_bound(begin(res), end(res), pair<I, int>{values[i], i});
 		if (it == res.end()) res.emplace_back(), it = res.end()-1;
-		*it = {S[i], i};
+		*it = {values[i], i};
 		prev[i] = it == res.begin() ? 0 : (it-1)->second;
 	}
-	int L = sz(res), cur = res.back().second;
-	vi ans(L);
-	while (L--) ans[L] = cur, cur = prev[cur];
+	int length = (int)(res).size(), cur = res.back().second;
+	vector<int> ans(length);
+	while (length--) ans[length] = cur, cur = prev[cur];
 	return ans;
 }
 
 int main() {
-	rep(weak,0,2) {
+	for (int weak = 0; weak < (2); ++weak) {
 		auto lt = [weak](int a, int b) { return weak ? a <= b : a < b; };
-		rep(it,0,1000000) {
+		for (int it = 0; it < (1000000); ++it) {
 			int n = rand() % 7;
-			vi v(n);
+			vector<int> v(n);
 			for(auto &x: v) x = rand() % 4;
-			vi inds = weak ? lisWeak(v) : lis(v);
-			rep(i,0,sz(inds)-1) {
+			vector<int> inds = weak ? lis_weak(v) : lis(v);
+			for (int i = 0; i < ((int)(inds).size()-1); ++i) {
 				assert(lt(v[inds[i]], v[inds[i+1]]));
 			}
-			rep(bi,0,(1 << n)) {
+			for (int bi = 0; bi < ((1 << n)); ++bi) {
 				int si = (int)bitset<32>(bi).count();
-				if (si <= sz(inds)) continue;
+				if (si <= (int)(inds).size()) continue;
 				int prev = INT_MIN;
-				rep(i,0,n) if (bi & (1 << i)) {
+				for (int i = 0; i < (n); ++i) if (bi & (1 << i)) {
 					if (!lt(prev, v[i])) goto next;
 					prev = v[i];
 				}
-				cout << "exists lis of size " << si << " but found only " << sz(inds) << endl;
+				cout << "exists lis of size " << si << " but found only " << (int)(inds).size() << endl;
 				for(auto &x: v) cout << x << ' ';
 				cout << endl;
 				abort();
@@ -47,5 +46,5 @@ int main() {
 			}
 		}
 	}
-	cout << "Tests passed!" << endl;
+	cout << "tests passed!" << endl;
 }

@@ -1,23 +1,25 @@
 /**
- * Author: Simon Lindholm
+ * Author: simon lindholm
  * Date: 2020-10-12
  * License: CC0
- * Source: https://en.wikipedia.org/wiki/Misra_%26_Gries_edge_coloring_algorithm
+ * Source: https://en.wikipedia.org/wiki/misra_%26_Gries_edge_coloring_algorithm
  * https://codeforces.com/blog/entry/75431 for the note about bipartite graphs.
- * Description: Given a simple, undirected graph with max degree $D$, computes a
+ * Description: given a simple, undirected graph with max degree $D$, computes a
  * $(D + 1)$-coloring of the edges such that no neighboring edges share a color.
  * ($D$-coloring is NP-hard, but can be done for bipartite graphs by repeated matchings of
  * max-degree nodes.)
+ * vertices and returned edge colors are numbered from 1. The result has an
+ * unused index 0, so result[i] is the color of edges[i-1].
  * Time: O(NM)
  * Status: stress-tested, tested on kattis:gamescheduling
  */
 #pragma once
 
-vi edgeColoring(int N, vector<pii> eds) {
-	vi cc(N + 1), ret(sz(eds)), fan(N), free(N), loc;
+vector<int> edge_coloring(int n, vector<pii> eds) {
+	vector<int> cc(n + 2), ret(eds.size() + 1), fan(n + 1), free(n + 1), loc;
 	for (pii e : eds) ++cc[e.first], ++cc[e.second];
-	int u, v, ncols = *max_element(all(cc)) + 1;
-	vector<vi> adj(N, vi(ncols, -1));
+	int u, v, ncols = *max_element(begin(cc), end(cc)) + 1;
+	vector<vector<int>> adj(n + 1, vector<int>(ncols, -1));
 	for (pii e : eds) {
 		tie(u, v) = e;
 		fan[0] = v;
@@ -40,7 +42,10 @@ vi edgeColoring(int N, vector<pii> eds) {
 		for (int y : {fan[0], u, end})
 			for (int& z = free[y] = 0; adj[y][z] != -1; z++);
 	}
-	rep(i,0,sz(eds))
-		for (tie(u, v) = eds[i]; adj[u][ret[i]] != v;) ++ret[i];
+	for (int i = 1; i <= (int)eds.size(); ++i) {
+		int& color = ret[i];
+		for (tie(u, v) = eds[i-1]; adj[u][color] != v;) ++color;
+		++color;
+	}
 	return ret;
 }

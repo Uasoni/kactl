@@ -1,19 +1,17 @@
 #include "../UnitTest.h"
 #include "../../content/numerical/goldenSectionSearch.h"
-#include <fstream>
-#include <sstream>
 
 double func1(double x) {
 	return 5+(x-3)*(x-3);
 }
 
-class test_goldenSectionSearch :
+class TestGoldenSectionSearch :
 	public UnitTest
 {
 public:
-	test_goldenSectionSearch() : UnitTest("test_goldenSectionSearch") { }
+	TestGoldenSectionSearch() : UnitTest("TestGoldenSectionSearch") { }
 
-	virtual ~test_goldenSectionSearch() { }
+	virtual ~TestGoldenSectionSearch() { }
 
 	virtual void run(int subcase) {
 		double e = 1e-6;
@@ -44,9 +42,9 @@ public:
 		}
 	}
 
-	virtual int getCount() const {
+	virtual int get_count() const {
 		return 6;
 	}
 };
 
-KACTL_AUTOREGISTER_TEST(test_goldenSectionSearch);
+KACTL_AUTOREGISTER_TEST(TestGoldenSectionSearch);

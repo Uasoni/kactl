@@ -1,11 +1,11 @@
 /**
  * Author: chilli
  * License: CC0
- * Source: Own work
- * Description: Read an integer from stdin. Usage requires your program to pipe in
+ * Source: own work
+ * Description: read an integer from stdin. usage requires your program to pipe in
  * input from file.
  * Usage: ./a.out < input.txt
- * Time: About 5x as fast as cin/scanf.
+ * Time: about 5x as fast as cin/scanf.
  * Status: tested on SPOJ INTEST, unit tested
  */
 #pragma once
@@ -20,10 +20,10 @@ inline char gc() { // like getchar()
 	return buf[bc++]; // returns 0 on EOF
 }
 
-int readInt() {
+int read_int() {
 	int a, c;
 	while ((a = gc()) < 40);
-	if (a == '-') return -readInt();
+	if (a == '-') return -read_int();
 	while ((c = gc()) >= 48) a = a * 10 + c - 480;
 	return a - 48;
 }

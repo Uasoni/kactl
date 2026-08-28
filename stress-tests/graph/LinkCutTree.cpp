@@ -5,16 +5,16 @@
 
 int main() {
 	srand(2);
-	LinkCut lczero(0);
-	rep(it,0,10000) {
-		int N = rand() % 20 + 1;
-		LinkCut lc(N);
-		UF uf(N);
+	LinkCutTree lczero(0);
+	for (int it = 0; it < (10000); ++it) {
+		int n = rand() % 20 + 1;
+		LinkCutTree lc(n);
+		UnionFind uf(n);
 		vector<pii> edges;
-		rep(it2,0,1000) {
+		for (int it2 = 0; it2 < (1000); ++it2) {
 			int v = (rand() >> 4) & 3;
 			if (v == 0 && !edges.empty()) { // remove
-				int r = (rand() >> 4) % sz(edges);
+				int r = (rand() >> 4) % (int)(edges).size();
 				pii ed = edges[r];
 				swap(edges[r], edges.back());
 				edges.pop_back();
@@ -23,11 +23,11 @@ int main() {
 				else
 					lc.cut(ed.second, ed.first);
 			} else {
-				int a = (rand() >> 4) % N;
-				int b = (rand() >> 4) % N;
-				uf.e.assign(N, -1);
+				int a = (rand() >> 4) % n + 1;
+				int b = (rand() >> 4) % n + 1;
+				uf.e.assign(n + 1, -1);
 				for(auto &ed: edges) uf.join(ed.first, ed.second);
-				bool c = uf.sameSet(a, b);
+				bool c = uf.same_set(a, b);
 				if (!c && v != 1) {
 					lc.link(a, b);
 					edges.emplace_back(a, b);
@@ -37,5 +37,5 @@ int main() {
 			}
 		}
 	}
-	cout<<"Tests passed!"<<endl;
+	cout<<"tests passed!"<<endl;
 }

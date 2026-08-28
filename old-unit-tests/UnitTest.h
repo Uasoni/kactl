@@ -2,7 +2,6 @@
 
 #include "global.h"
 #include "UnitTestManager.h"
-#include <sstream>
 
 class UnitTestFailed
 {
@@ -11,8 +10,8 @@ class UnitTestFailed
 class UnitTest
 {
 public:
-	UnitTest(const string& testName):
-		m_name(testName)
+	UnitTest(const string& test_name):
+		m_name(test_name)
 	{
 	}
 
@@ -24,7 +23,7 @@ public:
 public:
 	virtual void run(int subcase) = 0;
 
-	virtual int getCount() const
+	virtual int get_count() const
 	{
 		return 1;
 	}
@@ -36,25 +35,25 @@ protected:
 		if(have == want)
 			return;
 
-		UnitTestManager* unitTestManager = UnitTestManager::getInstance();
+		UnitTestManager* UnitTestManager = UnitTestManager::get_instance();
 
-		unitTestManager->reportCheckFailure(convertToString(have), convertToString(want), message);
+		UnitTestManager->report_check_failure(convert_to_string(have), convert_to_string(want), message);
 
 		throw UnitTestFailed();
 	}
 
 	void fail(const string& message)
 	{
-		UnitTestManager* unitTestManager = UnitTestManager::getInstance();
+		UnitTestManager* UnitTestManager = UnitTestManager::get_instance();
 
-		unitTestManager->reportFailure(message);
+		UnitTestManager->report_failure(message);
 
 		throw UnitTestFailed();
 	}
 
 private:
 	template<class T>
-	string convertToString(const T& data)
+	string convert_to_string(const T& data)
 	{
 		ostringstream oss;
 
@@ -65,20 +64,20 @@ private:
 	}
 
 	template<class T>
-	string convertToString(const vector<T>& data)
+	string convert_to_string(const vector<T>& data)
 	{
 		ostringstream oss;
 
 		oss << "{ ";
 		for(auto &it: data)
-			oss << convertToString(it) << " ";
+			oss << convert_to_string(it) << " ";
 		oss << "}";
 
 		return oss.str();
 	}
 
 public:
-	string getName()
+	string get_name()
 	{
 		return m_name;
 	}
@@ -87,7 +86,7 @@ protected:
 	string m_name;
 };
 
-#define KACTL_AUTOREGISTER_TEST(x) UnitTestWrapper* g__KACTL__temp__##x = new UnitTestWrapper(new x())
+#define KACTL_AUTOREGISTER_TEST(x) UnitTestWrapper* g__kactl__temp__##x = new UnitTestWrapper(new x())
 #include "UnitTestWrapper.h"
 
 #ifndef KACTL_UNITTEST_BATCH

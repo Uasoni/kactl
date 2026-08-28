@@ -1,17 +1,17 @@
 #include "../utilities/template.h"
 
-bool valid(vi deg) {
-	int n = sz(deg);
-	sort(all(deg));
-	reverse(all(deg));
+bool valid(vector<int> deg) {
+	int n = (int)(deg).size();
+	sort(begin(deg), end(deg));
+	reverse(begin(deg), end(deg));
 	int sum = 0;
-	rep(i,0,n) sum += deg[i];
+	for (int i = 0; i < (n); ++i) sum += deg[i];
 	if (sum & 1) return 0;
-	rep(k,0,n) {
+	for (int k = 0; k < (n); ++k) {
 		int s = 0, t = 0;
-		rep(i,0,k+1)
+		for (int i = 0; i < (k+1); ++i)
 			s += deg[i];
-		rep(i,k+1,n)
+		for (int i = k+1; i < (n); ++i)
 			t += min(deg[i], k + 1);
 		if (s > k * (k+1) + t) return 0;
 	}
@@ -19,15 +19,15 @@ bool valid(vi deg) {
 }
 
 int main() {
-	rep(N,0,7) {
-		vector<pii> possibleEd;
-		rep(i,0,N) rep(j,0,i) possibleEd.emplace_back(i, j);
-		set<vi> valids;
-		rep(bi,0,(1 << sz(possibleEd))) {
-			vi deg(N);
-			rep(i,0,sz(possibleEd)) if (bi & (1 << i)) {
+	for (int n = 0; n < (7); ++n) {
+		vector<pii> possible_ed;
+		for (int i = 0; i < (n); ++i) for (int j = 0; j < (i); ++j) possible_ed.emplace_back(i, j);
+		set<vector<int>> valids;
+		for (int bi = 0; bi < ((1 << (int)(possible_ed).size())); ++bi) {
+			vector<int> deg(n);
+			for (int i = 0; i < ((int)(possible_ed).size()); ++i) if (bi & (1 << i)) {
 				int a, b;
-				tie(a, b) = possibleEd[i];
+				tie(a, b) = possible_ed[i];
 				deg[a]++;
 				deg[b]++;
 			}
@@ -35,12 +35,12 @@ int main() {
 			valids.insert(deg);
 		}
 
-		vi de(N);
+		vector<int> de(n);
 		function<void(int)> rec = [&](int at) {
-			if (at == N) {
+			if (at == n) {
 				assert(valid(de) == valids.count(de));
 			} else {
-				rep(a,0,N) {
+				for (int a = 0; a < (n); ++a) {
 					de[at] = a;
 					rec(at + 1);
 				}
@@ -48,5 +48,5 @@ int main() {
 		};
 		rec(0);
 	}
-	cout << "Tests passed!" << endl;
+	cout << "tests passed!" << endl;
 }

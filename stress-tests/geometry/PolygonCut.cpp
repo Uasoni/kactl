@@ -6,21 +6,21 @@
 #include "../../content/geometry/InsidePolygon.h"
 #include "../../content/geometry/SegmentIntersection.h"
 
-typedef Point<double> P;
+typedef Point<double> point_type;
 int main() {
-	rep(it,0,500) {
-		int N = rand() % 10 + 3;
-		vector<P> ps;
-		rep(i,0,N) ps.emplace_back(rand() % 10 - 5, rand() % 10 - 5);
-		P p(rand() % 10 - 5), q(rand() % 10 - 5);
-		rep(i,0,N) rep(j,i+1,N) {
-			P a = ps[i], b = ps[(i+1)%N];
-			P c = ps[j], d = ps[(j+1)%N];
-			P r1, r2;
-			auto r = segInter(a, b, c, d);
-			if (sz(r) == 2) goto fail;
-			if (sz(r) == 1) {
-				if (i+1 == j || (j+1) % N == i) ;
+	for (int it = 0; it < (500); ++it) {
+		int n = rand() % 10 + 3;
+		vector<point_type> ps;
+		for (int i = 0; i < (n); ++i) ps.emplace_back(rand() % 10 - 5, rand() % 10 - 5);
+		point_type p(rand() % 10 - 5), q(rand() % 10 - 5);
+		for (int i = 0; i < (n); ++i) for (int j = i+1; j < (n); ++j) {
+			point_type a = ps[i], b = ps[(i+1)%n];
+			point_type c = ps[j], d = ps[(j+1)%n];
+			point_type r1, r2;
+			auto r = seg_inter(a, b, c, d);
+			if ((int)(r).size() == 2) goto fail;
+			if ((int)(r).size() == 1) {
+				if (i+1 == j || (j+1) % n == i) ;
 				else goto fail;
 			}
 		}
@@ -28,26 +28,26 @@ int main() {
 
 		int count = 0;
 		const int ITS = 400000;
-		rep(it,0,ITS) {
+		for (int it = 0; it < (ITS); ++it) {
 			double x = rand() / (RAND_MAX + 1.0) * 10 - 5;
 			double y = rand() / (RAND_MAX + 1.0) * 10 - 5;
-			if (!inPolygon(ps, P{x,y}, true)) continue;
-			if (sideOf(p, q, P{x,y}) > 0) continue;
+			if (!in_polygon(ps, point_type{x,y}, true)) continue;
+			if (side_of(p, q, point_type{x,y}) > 0) continue;
 			count++;
 		}
-		double approxArea = (double)count / ITS * 100;
+		double approx_area = (double)count / ITS * 100;
 
-		ps = polygonCut(ps, p, q);
-		double realArea = ps.empty() ? 0.0 : abs(polygonArea2(ps) / 2.0);
+		ps = polygon_cut(ps, p, q);
+		double real_area = ps.empty() ? 0.0 : abs(polygon_area2(ps) / 2.0);
 
 		// cout << setprecision(2) << fixed;
-		assert(realArea - approxArea < 2e-1);
-		// cout << N << ' ' << realArea << '\t' << approxArea << '\t' << realArea - approxArea << endl;
+		assert(real_area - approx_area < 2e-1);
+		// cout << n << ' ' << real_area << '\t' << approx_area << '\t' << real_area - approx_area << endl;
 
-		// cerr << N << endl;
+		// cerr << n << endl;
 		// for(auto &x: ps) {
 			// cout << x.x << ' ' << x.y << endl;
 		// }
 	}
-	cout<<"Tests passed!"<<endl;
+	cout<<"tests passed!"<<endl;
 }

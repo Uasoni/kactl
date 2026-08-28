@@ -1,11 +1,11 @@
 /**
- * Author: Ulf Lundstrom
+ * Author: ulf lundstrom
  * Date: 2009-04-11
  * License: CC0
- * Source: http://en.wikipedia.org/wiki/Circumcircle
+ * Source: http://en.wikipedia.org/wiki/circumcircle
  * Description:\\
 \begin{minipage}{75mm}
-The circumcirle of a triangle is the circle intersecting all three vertices. ccRadius returns the radius of the circle going through points A, B and C and ccCenter returns the center of the same circle.
+the circumcirle of a triangle is the circle intersecting all three vertices. cc\_radius returns the radius of the circle going through points A, B and C and cc\_center returns the center of the same circle.
 \end{minipage}
 \begin{minipage}{15mm}
 \vspace{-2mm}
@@ -17,12 +17,12 @@ The circumcirle of a triangle is the circle intersecting all three vertices. ccR
 
 #include "Point.h"
 
-typedef Point<double> P;
-double ccRadius(const P& A, const P& B, const P& C) {
+typedef Point<double> circle_point;
+double cc_radius(const circle_point& A, const circle_point& B, const circle_point& C) {
 	return (B-A).dist()*(C-B).dist()*(A-C).dist()/
 			abs((B-A).cross(C-A))/2;
 }
-P ccCenter(const P& A, const P& B, const P& C) {
-	P b = C-A, c = B-A;
+circle_point cc_center(const circle_point& A, const circle_point& B, const circle_point& C) {
+	circle_point b = C-A, c = B-A;
 	return A + (b*c.dist2()-c*b.dist2()).perp()/b.cross(c)/2;
 }
