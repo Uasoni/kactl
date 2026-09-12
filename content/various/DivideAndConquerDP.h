@@ -4,6 +4,11 @@
  * Source: codeforces
  * Description: given $a[i] = \min_{lo(i) \le k \le hi(i)}(f(i, k))$ where the (minimal)
  * optimal $k$ increases with $i$, computes $a[i]$ for the inclusive range $[L,R]$.
+ * Adapt lo/hi (legal k), f (candidate cost) and store (save the answer), then
+ * call solve(L,R). Each i must have a legal candidate. For layered DP, f
+ * should read the completed previous layer and store should write the next.
+ * Prove that the smallest optimal k is nondecreasing; otherwise this can
+ * silently miss the optimum. Costs must fit in ll; do not add to LLONG\_MAX.
  * Time: O((N + (hi-lo)) \log N)
  * Status: tested on http://codeforces.com/contest/321/problem/E
  */
@@ -18,6 +23,7 @@ struct DpState { // modify at will:
 	void rec(int left, int right, int opt_left, int opt_right) {
 		if (left > right) return;
 		int mid = (left + right) >> 1;
+		// Ties choose the smallest k.
 		pair<ll, int> best(LLONG_MAX, opt_left);
 		for (int k = max(opt_left, lo(mid)); k <= min(opt_right, hi(mid)); ++k)
 			best = min(best, make_pair(f(mid, k), k));

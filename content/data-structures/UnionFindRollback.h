@@ -5,6 +5,11 @@
  * Source: folklore
  * Description: disjoint-set data structure with undo.
  * elements are numbered $1..n$.
+ * join returns whether components merged; find gives a current representative.
+ * Save time() before a batch of joins, then rollback(t) undoes that batch.
+ * Only roll back to an earlier snapshot on the current history; this is not
+ * arbitrary edge deletion. For offline dynamic connectivity, put each edge's
+ * active time interval in a segment tree, join on DFS entry and undo on exit.
  * if undo is not needed, skip st, time() and rollback().
  * Usage: int t = uf.time(); ...; uf.rollback(t);
  * Time: $O(\log(N))$
@@ -16,6 +21,7 @@ struct RollbackUnionFind {
 	vector<int> e; vector<pii> st;
 	RollbackUnionFind(int n) : e(n + 1, -1) {}
 	int size(int x) { return -e[find(x)]; }
+	// No path compression: rollback must undo every change.
 	int find(int x) { return e[x] < 0 ? x : find(e[x]); }
 	int time() { return (int)(st).size(); }
 	void rollback(int t) {

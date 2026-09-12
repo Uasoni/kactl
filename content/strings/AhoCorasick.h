@@ -10,6 +10,10 @@
  * find\_all($-$, word) finds all words (up to $N \sqrt N$ many if no duplicate patterns)
  * that start at each position (shortest first).
  * duplicate patterns are allowed; empty patterns are not.
+ * patterns is a normal vector (no dummy element); returned ID j means
+ * patterns[j-1]. Pass the same patterns, in the same order, to find\_all.
+ * Default alphabet is A--Z; change FIRST\_CHARACTER for lowercase input.
+ * All pattern/text characters must lie in the configured alphabet.
  * to find the longest words that start at each position, reverse all input.
  * for large alphabets, split each symbol into chunks, with sentinel bits for symbol boundaries.
  * Time: construction takes $O(26N)$, where $N =$ sum of length of patterns.
@@ -69,7 +73,7 @@ struct AhoCorasick {
 		for (char c : word) {
 			n = nodes[n].next[c - FIRST_CHARACTER];
 			res.push_back(nodes[n].end);
-			// count += N[n].nmatches;
+			// count += nodes[n].nmatches; // Includes overlaps.
 		}
 		return res;
 	}

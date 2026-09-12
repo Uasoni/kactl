@@ -6,6 +6,14 @@
  * Description: transform to a basis with fast convolutions of the form
  * $\displaystyle c[z] = \sum\nolimits_{z = x \oplus y} a[x] \cdot b[y]$,
  * where $\oplus$ is one of AND, OR, XOR. the size of $a$ must be a power of two.
+ * Default is AND. Select exactly one butterfly below; for XOR also enable
+ * the final inverse division. conv requires equal, nonempty power-of-two
+ * lengths; pad both with zeros to cover all masks (no doubling needed).
+ * Indices are bitmasks starting at 0. Intermediates must fit in int; widen
+ * vector elements, references and pairs together if needed.
+ * Modulo an odd prime, reduce every operation, normalize subtractions, and
+ * for XOR replace division by N with multiplication by its modular inverse.
+ * Usage: auto c = conv(a, b); // c[z] = sum of a[x]*b[y] with (x AND y) == z
  * Time: O(N \log N)
  * Status: stress-tested
  */

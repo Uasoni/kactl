@@ -7,10 +7,20 @@
  * edges such that the path from any leaf to the root contains at most log(n)
  * light edges. code does additive modifications and max queries, but can
  * support commutative segtree modifications/queries on paths and subtrees.
- * takes as input the full adjacency list. VALS\_EDGES being true means that
+ * takes as input the full adjacency list. VALUES\_ON\_EDGES being true means that
  * values are stored in the edges, as opposed to the nodes. all values
  * initialized to the segtree default. vertices are $1..n$, root is 1, and the
  * adjacency list has size $n+1$.
+ * Initialize with tree->set(1,n,0) before additive updates (default is $-10^9$).
+ * To load individual values, set position pos[v]; an edge's value belongs to
+ * its deeper endpoint. Edge-mode path queries exclude the LCA, and subtree
+ * queries exclude the edge to the parent. Empty queries return $-10^9$.
+ * To change max to sum, adapt the segment tree (including lazy length factors)
+ * and query identity/combine here. Noncommutative queries need path direction.
+ * Usage: HeavyLightDecomposition<false> h(adj); // vertex values
+ *  h.tree->set(1, n, 0);
+ *  h.modify_path(u, v, 3); // add 3, including both endpoints
+ *  int best = h.query_path(u, v);
  * Time: O((\log N)^2)
  * Status: stress-tested against old HeavyLightDecomposition
  */
@@ -51,6 +61,7 @@ template <bool VALUES_ON_EDGES> struct HeavyLightDecomposition {
 			if (rt[u] == rt[v]) break;
 			op(pos[rt[v]], pos[v]);
 		}
+		// Skip LCA's incoming edge in edge mode.
 		if (pos[u] + VALUES_ON_EDGES <= pos[v])
 			op(pos[u] + VALUES_ON_EDGES, pos[v]);
 	}

@@ -66,6 +66,14 @@ Ex. \kactlimport{example.h} will include the file example.h from the same folder
 Remember to annotate the file correctly before including it!
 Also, don't forget to write tests for the code before including it!
 
+Contest-facing documentation belongs in the header's Description and Usage
+fields: both appear above the code in the PDF. Keep these focused on indexing,
+preconditions, return values, a minimal call sequence, and common adaptations.
+Description uses LaTeX (escape underscores and percent signs); Usage is code.
+Use short // comments for invariants or modification points needed while copying.
+The preprocessor removes /// comments from the PDF; reserve those for notes that
+are only useful when reading the source. Avoid narrating routine code line by line.
+
 
 **************************************************
 * Modifying the KACTL edition                    *

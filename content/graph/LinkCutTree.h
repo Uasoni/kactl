@@ -2,23 +2,33 @@
  * Author: simon lindholm
  * Date: 2016-07-25
  * Source: https://github.com/ngthanhtrung23/acm_notebook_new/blob/master/data_structure/link_cut_tree.h
- * Description: represents a forest of unrooted trees. you can add and remove
- * edges (as long as the result is still a forest), and check whether
- * two nodes are in the same tree.
- * vertices are numbered $1..n$.
+ * Description: dynamic connectivity in a forest, vertices $1..n$.
+ * link(u,v) requires different components; cut(u,v) requires an existing edge.
+ * General graphs need extra logic to find replacement edges after cuts.
+ * Each component has a current root (representative):
+ * \texttt{access(\&nodes[u])->first()} returns its node pointer.
+ * Rerooting/linking/cutting can change it; do not cache representatives.
+ * Auxiliary splay trees store paths in root-to-leaf order, not whole components.
+ * This version only provides connectivity; access does not isolate a path for
+ * aggregation (it may retain nodes below u). Path sums need additional changes.
+ * Do not copy the tree or resize nodes: internal pointers must stay valid.
+ * Usage: LinkCutTree lc(n);
+ *  lc.link(1, 2); // different components
+ *  bool same = lc.connected(1, 2);
+ *  lc.cut(1, 2); // existing edge
  * Time: all operations take amortized O(\log N).
  * Status: stress-tested a bit for N <= 20
  */
 #pragma once
 
-struct LinkCutNode { // splay tree. root's pp contains tree's parent.
+struct LinkCutNode { // p: splay parent; pp: path parent at root
 	LinkCutNode *p = 0, *pp = 0, *c[2];
 	bool flip = 0;
 	LinkCutNode() { c[0] = c[1] = 0; fix(); }
 	void fix() {
 		if (c[0]) c[0]->p = this;
 		if (c[1]) c[1]->p = this;
-		// (+ update sum of subtree elements etc. if wanted)
+		// Pull splay subtree aggregates here if augmenting.
 	}
 	void push_flip() {
 		if (!flip) return;
@@ -41,7 +51,7 @@ struct LinkCutNode { // splay tree. root's pp contains tree's parent.
 		if (p) p->fix();
 		swap(pp, y->pp);
 	}
-	void splay() { /// splay this up to the root. always finishes without flip set.
+	void splay() { // Splay to top; push flip.
 		for (push_flip(); p; ) {
 			if (p->p) p->p->push_flip();
 			p->push_flip(); push_flip();
@@ -50,7 +60,7 @@ struct LinkCutNode { // splay tree. root's pp contains tree's parent.
 			else p->p->rot(c2, c1 != c2);
 		}
 	}
-	LinkCutNode* first() { /// return the min element of the subtree rooted at this, splayed to the top.
+	LinkCutNode* first() { // Splay leftmost path node to top.
 		push_flip();
 		return c[0] ? c[0]->first() : (splay(), this);
 	}
@@ -79,10 +89,11 @@ struct LinkCutTree {
 		LinkCutNode* nu = access(&nodes[u])->first();
 		return nu == access(&nodes[v])->first();
 	}
-	void make_root(LinkCutNode* u) { /// move u to root of represented tree.
+	// Make u the component root; keep edges unchanged.
+	void make_root(LinkCutNode* u) {
 		access(u);
 		u->splay();
-		if(u->c[0]) {
+		if(u->c[0]) { // Reverse the path of old ancestors.
 			u->c[0]->p = 0;
 			u->c[0]->flip ^= 1;
 			u->c[0]->pp = u;
@@ -90,11 +101,13 @@ struct LinkCutTree {
 			u->fix();
 		}
 	}
-	LinkCutNode* access(LinkCutNode* u) { /// move u to root aux tree. return the root of the root aux tree.
+	// Join paths to component root; return the splay root.
+	// result->first() gives the component representative.
+	LinkCutNode* access(LinkCutNode* u) {
 		u->splay();
 		while (LinkCutNode* pp = u->pp) {
 			pp->splay(); u->pp = 0;
-			if (pp->c[1]) {
+			if (pp->c[1]) { // Keep the detached path's parent.
 				pp->c[1]->p = 0; pp->c[1]->pp = pp; }
 			pp->c[1] = u; pp->fix(); u = pp;
 		}

@@ -5,13 +5,19 @@
  * Source: own work
  * Description: container where you can add lines of the form kx+m, and query maximum values at points x.
  *  useful for dynamic programming (``convex hull trick'').
+ * Integer slopes/intercepts/queries; insertion and query order are arbitrary.
+ * Add at least one line before querying. For minima, add(-k,-m) and negate
+ * query(x). No deletion. Products, differences and negations must fit in ll.
+ * Usage: LineContainer hull;
+ *  hull.add(2, 3); // y = 2*x + 3
+ *  ll best = hull.query(4); // 11
  * Time: O(\log N)
  * Status: stress-tested
  */
 #pragma once
 
 struct Line {
-	mutable ll k, m, p;
+	mutable ll k, m, p; // p: last integer x before next line wins
 	bool operator<(const Line& o) const { return k < o.k; }
 	bool operator<(ll x) const { return p < x; }
 };
